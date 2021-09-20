@@ -1794,14 +1794,14 @@ class KernelWriter(metaclass=abc.ABCMeta):
     kl.append(self.functionSignatureSuffix(kernel))
     kl.append(self.functionBegin(kernel))
 
-    kl.append(self.comment3("Allocate Resources"))
+    kl.append(self.comment3("Allocate Resources bbk"))
     kl.append(self.allocateResources(kernel))
 
     if self.enable["PreLoop"]:
       ####################################
       # Local Read Addresses
       ####################################
-      kl.append(self.comment3("Local Read Addresses"))
+      kl.append(self.comment3("Local Read Addresses  bbk"))
 
       # tile assignments
       kl.append(self.comment("local read addresses: tile assignments a/b"))

@@ -44,6 +44,8 @@ from . import __version__
 ################################################################################
 def executeStepsInConfig( config ):
 
+
+  print(" bbk checkpoint 100")
   ##############################################################################
   # Benchmark Problems
   ##############################################################################
@@ -51,7 +53,7 @@ def executeStepsInConfig( config ):
     BenchmarkProblems.main( config["BenchmarkProblems"] )
     print1("")
 
-
+  print(" bbk checkpoint 200")  
   ##############################################################################
   # Library Logic
   ##############################################################################
@@ -72,7 +74,7 @@ def executeStepsInConfig( config ):
     else:
       print1("# LibraryLogic already done.")
     print1("")
-
+    print(" bbk checkpoint 300")
 
   ##############################################################################
   # Write Client
@@ -236,6 +238,7 @@ def Tensile(userArgs):
   #globalParameters["NewClient"] = 2
   #globalParameters["PrintCodeCommands"] = True
 
+  print(" bbk checkpoint 000: Leaving Tensile.py")
   # Execute Steps in the config script
   executeStepsInConfig(config)
 
