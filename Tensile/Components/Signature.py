@@ -72,10 +72,12 @@ def getDstValueType(kernel, cov):
 
 # bbk TODO
 def getCptValueType(kernel, cov):
+    print("bbk cptValueType1: {}".format(kernel["ProblemType"]["DataType"].toNameAbbrev())) # bbk chg
+    print("bbk cptValueType2: {}".format(cptValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()])) # bbk chg
+    print("bbk cptValueType3: {}".format(kernel["ProblemType"]["ComputeDataType"].toNameAbbrev())) # bbk chg
+    #print("bbk cptValueType4: {}".format(cptValueTypeDict[kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()])) # bbk chg
     #cptValueType = cptValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()] # bbk: is that a bug? why should we always set alpha and beta type to DataType and not the compute type?
-    print("bbk cptValueType1: {}".format(kernel["ProblemType"]["ComputeDataType"].toNameAbbrev())) # bbk chg
-    print("bbk cptValueType2: {}".format(cptValueTypeDict[kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()])) # bbk chg
-    cptValueType = cptValueTypeDict[kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()] # bbk chg
+    #cptValueType = cptValueTypeDict[kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()] # bbk chg
     # bbk This condition confirms that HBH behaves as HHS_BH, while we still keep the HBH name for the kernel. 
     # As of now, we do not want to use HHS_BH name due to some conflict in the rocBLAS.
     # bbk we do not need this condition, we already changed the ComputeType, But it should get the ComputeDataType from ComputeDataType and not DataType.
@@ -83,11 +85,19 @@ def getCptValueType(kernel, cov):
     #   kernel["ProblemType"]["ComputeDataType"].isHalf() and \
     #   kernel["ProblemType"]["HighPrecisionAccumulate"]:
     #    cptValueType = "F32"    
+    
+    if kernel["ProblemType"]["DataType"].isHalf() and kernel["ProblemType"]["HighPrecisionAccumulate"]:
+        cptValueType = cptValueTypeDict[kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()] # bbk: is that a bug? why should we always set alpha and beta type to DataType and not the compute type?    
+    else:
+        cptValueType = cptValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()] # bbk: is that a bug? why should we always set alpha and beta type to DataType and not the compute type?    
+    
     if cov == "V3":
         cptValueType = cptValueType.lower()
+    
+    print("bbk cptValueType5: {}".format(cptValueType)) # bbk chg
     return cptValueType
 
-def getCptByte(kernel):
+def getCptByte(kernel): # bbk TODO: this needs to be adjusted according to the getCptValueType.
     cptByte = 4
     if kernel["ProblemType"]["DataType"].isHalf() and not kernel["ProblemType"]["HighPrecisionAccumulate"]:
         cptByte = 2

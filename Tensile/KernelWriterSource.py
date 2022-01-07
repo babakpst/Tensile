@@ -866,7 +866,7 @@ class KernelWriterSource(KernelWriter):
     s += "  " + globalStr + ptrStr + " const * " + batchStr + "B"
 
     #bbk, should be here.
-    print("bbk: source Kernel: %s" %  kernel["ProblemType"]["ComputeDataType"].toDevice(self.language))
+    print("bbk: KernelWriterSource: %s" %  kernel["ProblemType"]["ComputeDataType"].toDevice(self.language))
 
 
     # alpha & beta
