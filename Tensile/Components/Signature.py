@@ -73,6 +73,8 @@ def getDstValueType(kernel, cov):
 # bbk TODO
 def getCptValueType(kernel, cov):
     #cptValueType = cptValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()] # bbk: is that a bug? why should we always set alpha and beta type to DataType and not the compute type?
+    print("bbk cptValueType1: {}".foramt(kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()) # bbk chg
+    print("bbk cptValueType2: {}".foramt(cptValueTypeDict[kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()]) # bbk chg
     cptValueType = cptValueTypeDict[kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()] # bbk chg
     # bbk This condition confirms that HBH behaves as HHS_BH, while we still keep the HBH name for the kernel. 
     # As of now, we do not want to use HHS_BH name due to some conflict in the rocBLAS.
