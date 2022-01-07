@@ -850,10 +850,18 @@ class ProblemType(Mapping):
       else:
         if "DataType" in config:
           self["ComputeDataType"] = DataType(config["DataType"])
+          self["DestDataType"] = DataType(config["DataType"]) # bbk double check
         else:
           printExit("NO compute data type, or dest data type, or data type specified")
           self["DataType"] = DataType(0)
 
+    # bbk TODO chg: if all are h, change the ComputeDateType to S. 
+    # Modifying ComputeDataType: if DataType, DestDataType, and ComputeDataType are half, we change ComputeDataType to S to avoid rounding error.
+    #if DataType(config["ComputeDataType"])==DataType('h') and DataType(config["DataType"])==DataType('h') and DataType(config["DestDataType"])==DataType('h'):
+    if self["ComputeDataType"].isHalf() and DataType(config["DataType"]).isHalf() and self["HighPrecisionAccumulate"]:
+      self["ComputeDataType"] = DataType('s') # Basically means if we have HHH, convert it to HHS.
+
+    
     self.convolution = None
     if self["OperationType"] == "GEMM":
       self.checkIfSupportedGEMMType()
@@ -918,7 +926,7 @@ class ProblemType(Mapping):
   #   - SGEMM:  [S/S/ S/S/ S/S]
   #   - HGEMM:  [H/H/ H/H/ H/H] (HPA=F)
   # _Ex:
-  #   - HGEMM:  [H/H/ H/H/ H/H] (HPA=T), SEE MORE EXPLANATION BELOW
+  #   - HGEMM:  [H/H/ H/H/ H/H] (HPA=T), SEE MORE EXPLANATION BELOW // bbk This is really does not make sence, we need to use the next line instead.
   #   - HGEMM:  [H/H/ H/H/ S/S] (HPA=T), Somehow we hadn't used this version
   #   - BFGEMM: [B/B/ B/B/ S/S] (HPA=T), the only supported one
   #   - IGEMM:  [i8/i8/ I/I/ I/I ], tensile packs 4 i8 to i8x4 with some restrictions
@@ -966,7 +974,7 @@ class ProblemType(Mapping):
     if gemmType not in validGEMMTypes:
       printExit("This typed-GEMM (Ti, To, Tc) = (%s, %s, %s) is not supported yet."%(gemmType[0],gemmType[1],gemmType[2]))
 
-    # TODO- Migrate ([H/H/H]+HPA) to ([H/H/S]+HPA)
+    # TODO- Migrate ([H/H/H]+HPA) to ([H/H/S]+HPA) // bbk: What are the steps to do this migration?
     # Note that we need to do a little change in rocBLAS and logic yaml
 
   ########################################

@@ -2650,6 +2650,7 @@ class KernelWriter(metaclass=abc.ABCMeta):
         # on each unroll iteration.
         self.doShadowInit = 1 # 1 is just store setup
 
+    # bbk: TODO what is this PersistentKernel? Do we still need this? this probably not needed.
     # for PersistentKernel with HPA mode, we can do the alpha, beta conversion f16->f32 only once outside the PK-loop
     if kernel["PersistentKernel"]:
       kl.append( self.checkAlphaBetaForHPA(kernel))
@@ -4068,6 +4069,7 @@ class KernelWriter(metaclass=abc.ABCMeta):
   ##############################################################################
   # Convert Alpha, Beta from F16 to F32 for HPA
   ##############################################################################
+  # bbk TODO we do not need this
   @abc.abstractmethod
   def checkAlphaBetaForHPA(self, kernel):
     return ""

@@ -1340,7 +1340,7 @@ class KernelWriterAssembly(KernelWriter):
     if kernel["ProblemType"]["HighPrecisionAccumulate"]:
       # Special case for HPA
       if kernel["ProblemType"]["DataType"].isHalf() or kernel["ProblemType"]["DataType"].isBFloat16():
-        self.bpeCinternal = int(self.bpr*1) # mainly for [H/H/H], internal = f32
+        self.bpeCinternal = int(self.bpr*1) # mainly for [H/H/H], internal = f32  #bbk check this out.
       elif kernel["ProblemType"]["DataType"].isInt8x4() or kernel["ProblemType"]["DataType"].isInt8():
         # numRegisters for Int8x4 = numRegisters for Int32 = 1
         # Cinternal == ComputeType == int32
@@ -6905,13 +6905,12 @@ class KernelWriterAssembly(KernelWriter):
           # a special case: (h,h,h,h,h,h) + HPA + PersistentKernel
           #                 the checkAlphaBetaForHPA is done at the beginning of kernel,
           #                 so alpha is already cvt from F16->F32 here
-          if kernel["ProblemType"]["HighPrecisionAccumulate"] and \
-             kernel["PersistentKernel"]:
+          if kernel["ProblemType"]["HighPrecisionAccumulate"] and kernel["PersistentKernel"]: # bbk TODO: WE DO NOT NEED THIS LINE
             kStr += inst("s_cmp_eq_u32", sgpr("Alpha"), "1.0", "Alpha == 1.0 ?")
           # Otherwise, Alpha is a packed F16 so far (if Non-PK, the cvt is done later in GW)
           else:
             # for (h,h,h,h,h,h) no HPA,
-            # or  (h,h,h,h,h,h) + HPA + NoPK
+            # or  (h,h,h,h,h,h) + HPA + NoPK  # bbk TODO: delete the comment
             kStr += inst("s_mov_b32", sgpr(tmpSgpr), "0x3c003c00", "Packed alpha==1.0")
             kStr += inst("s_cmp_eq_u32", sgpr("Alpha"), sgpr(tmpSgpr), "alpha == 1.0?")
 
@@ -10761,10 +10760,13 @@ class KernelWriterAssembly(KernelWriter):
   ##############################################################################
   # Convert Alpha, Beta from F16 to F32 for HPA
   ##############################################################################
+  #bbk TODO check THIS OUT, We have a copy of this down there.
   def checkAlphaBetaForHPA(self, kernel):
     kStr = ""
     useBeta = kernel["ProblemType"]["UseBeta"]
 
+    print("bbk: fp16 to fp32, checkAlphaBetaForHPA+in the function")
+    kStr += "// bbk KernelWriterAssembly.py: convert fp16 to fp32 before-function \n"
     # Also can push alpha/beta recalc back to host for HPA mode?
     # ComputeType=H but using HPA (h,h,h,h,h,h), cvt alpha, beta f16->f32
     if kernel["ProblemType"]["DataType"].isHalf() and \
@@ -10775,11 +10777,14 @@ class KernelWriterAssembly(KernelWriter):
       # if kernel["PersistentKernel"]:
       #   kStr += inst("s_cmp_gt_u32", sgpr("PersistentLoopIter"), hex(1), "if PersistentLoop Iter > 1, not the first loop, don't cvt 16b->32b" )
       #   kStr += inst("s_cbranch_scc1", skipCvtAlphaLabel, "don't cvt 16b->32b again" )
+     
+      # bbk
+      print("bbk: fp16 to fp32, checkAlphaBetaForHPA+out of function")
 
       alphaVgprTmp = self.vgprPool.checkOut(1, "alpha")
       # alpha, beta are packed halfs in half mode (f16.hi == f16.lo) - setup on host
       kStr += inst("v_mov_b32", vgpr(alphaVgprTmp), sgpr("Alpha"), "sgpr -> vgpr b/c op_sel")
-      kStr += inst("v_cvt_f32_f16", vgpr(alphaVgprTmp), vgpr(alphaVgprTmp), "convert alpha to fp32")
+      kStr += inst("v_cvt_f32_f16", vgpr(alphaVgprTmp), vgpr(alphaVgprTmp), "convert alpha to fp32") # bbk when this will be called?
       kStr += inst("v_readfirstlane_b32", sgpr("Alpha"), vgpr(alphaVgprTmp), "restore alpha sgpr")
       self.vgprPool.checkIn(alphaVgprTmp)
 
@@ -10852,13 +10857,15 @@ class KernelWriterAssembly(KernelWriter):
     """
     self.betaVgpr = None
 
+    print("bbk: fp16 to fp32: globalWriteElements berfore")
+
     # Also can push alpha/beta recalc back to host for HPA mode?
     # only do this when no PK. (When PersistentKernel, move this to checkAlphaBetaForHPA() and do only once before PK-loop)
-    if not kernel["PersistentKernel"] and \
-       kernel["ProblemType"]["DataType"].isHalf() and \
-       kernel["ProblemType"]["ComputeDataType"].isHalf() and \
-       kernel["ProblemType"]["HighPrecisionAccumulate"]:
+    # bbk TODO: remove the entire condition
+    if not kernel["PersistentKernel"] and kernel["ProblemType"]["DataType"].isHalf() and kernel["ProblemType"]["ComputeDataType"].isHalf() and kernel["ProblemType"]["HighPrecisionAccumulate"]:
 
+      print("bbk: fp16 to fp32: globalWriteElements after")
+      kStr += "// bbk alpha \n"
       alphaVgprTmp = self.vgprPool.checkOut(1, "alpha")
       # alpha, beta are packed halfs in half mode (f16.hi == f16.lo) - setup on host
       kStr += inst("v_mov_b32", vgpr(alphaVgprTmp), sgpr("Alpha"), "sgpr -> vgpr b/c op_sel")
@@ -10867,6 +10874,8 @@ class KernelWriterAssembly(KernelWriter):
       self.vgprPool.checkIn(alphaVgprTmp)
 
       if beta:
+        print("bbk: fp16 to fp32: globalWriteElements after beta")
+        kStr += "// bbk beta \n"
         #jgolds look at moving these converted values back to scalar regs and free up the VGPRs
         # TODO - for hpa the host should pass in an F32 alpha so we don't have to do it here
         self.betaVgpr = self.vgprPool.checkOut(1, "beta")

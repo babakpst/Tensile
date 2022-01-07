@@ -55,6 +55,7 @@ def executeStepsInConfig( config ):
   ##############################################################################
   # Library Logic
   ##############################################################################
+  print("bbk: librarylogic checkpoint 000")
   libraryLogicDataPath = os.path.join(globalParameters["WorkingPath"], \
     globalParameters["LibraryLogicPath"])
   if "LibraryLogic" in config:

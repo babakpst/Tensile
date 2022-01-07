@@ -70,8 +70,17 @@ def getDstValueType(kernel, cov):
         dstValueType = dstValueType.lower()
     return dstValueType
 
+# bbk TODO
 def getCptValueType(kernel, cov):
-    cptValueType = cptValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()]
+    #cptValueType = cptValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()] # bbk: is that a bug? why should we always set alpha and beta type to DataType and not the compute type?
+    cptValueType = cptValueTypeDict[kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()] # bbk chg
+    # bbk This condition confirms that HBH behaves as HHS_BH, while we still keep the HBH name for the kernel. 
+    # As of now, we do not want to use HHS_BH name due to some conflict in the rocBLAS.
+    # bbk we do not need this condition, we already changed the ComputeType, But it should get the ComputeDataType from ComputeDataType and not DataType.
+    #if kernel["ProblemType"]["DataType"].isHalf() and \
+    #   kernel["ProblemType"]["ComputeDataType"].isHalf() and \
+    #   kernel["ProblemType"]["HighPrecisionAccumulate"]:
+    #    cptValueType = "F32"    
     if cov == "V3":
         cptValueType = cptValueType.lower()
     return cptValueType
@@ -437,11 +446,13 @@ class SignatureCOV3(Signature):
 
         srcValueType = getSrcValueType(kernel, "V3")
         dstValueType = getDstValueType(kernel, "V3")
-        cptValueType = getCptValueType(kernel, "V3")
+        cptValueType = getCptValueType(kernel, "V3") # bbk 
         cptByte = getCptByte(kernel)
         # cptSize = getCptSize(kernel)
         # cptAlign = getCptAlign(kernel)
 
+        #bbk
+        kStr += "// bbk Signature.py: amdgpu_MetaData %s"% writer.endLine
         # Codeobject V3 metadata
         kStr += ".amdgpu_metadata\n"
         kStr += "---\n"
@@ -471,7 +482,7 @@ class SignatureCOV3(Signature):
         kStr += self.v3Argument(                               'B',     '8', offset, "global_buffer", srcValueType, "generic"); offset += 8
 
         useSize = max(4, cptByte)
-        kStr += self.v3Argument(                             "alpha", useSize, offset,      "by_value", cptValueType); offset += useSize
+        kStr += self.v3Argument(                             "alpha", useSize, offset,      "by_value", cptValueType); offset += useSize # bbk
         if kernel["ProblemType"]["UseBeta"]:
             kStr += self.v3Argument(                          "beta", useSize, offset,      "by_value", cptValueType); offset += useSize
 

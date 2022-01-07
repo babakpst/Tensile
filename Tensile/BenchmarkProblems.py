@@ -300,6 +300,7 @@ def benchmarkProblemType(problemTypeConfig, problemSizeGroupConfig, problemSizeG
         else:
             print1("# Already benchmarked; skipping.")
 
+        # BBK this is where we write 2_Benchmark
         # write solutions YAML
         LibraryIO.writeSolutions(solutionsFileName, benchmarkStep.problemSizes, solutions)
 
