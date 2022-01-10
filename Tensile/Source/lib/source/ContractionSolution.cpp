@@ -901,13 +901,16 @@ namespace Tensile
         // retreive alpha/beta type set via setAlpha/BetaType()
         auto alphaType = problem.alphaType();
         auto betaType  = problem.betaType();
+        std::cout << "bbk checkpoint 002 ContractionSolution.cpp alphaType: " << alphaType << std::endl;
+
 
         // Backward-compatible: when setAlpha/BetaType() wasn't called, use the old way
         // Could remove after rocBLAS is updated
         if(alphaType == DataType::None)
         {
-            alphaType
-                = problemType.aType == DataType::BFloat16 ? DataType::Float : problemType.dType;
+            std::cout << "bbk checkpoint 001 ContractionSolution.cpp are we getting here? " <<  std::endl;
+            //alphaType = problemType.aType == DataType::BFloat16 ? DataType::Float : problemType.dType; // bbk original
+            alphaType = (problemType.aType == DataType::BFloat16 || problemType.aType == DataType::Half) ? DataType::Float : problemType.dType; // bbk original
         }
         if(betaType == DataType::None)
         {
