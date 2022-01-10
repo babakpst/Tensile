@@ -893,7 +893,7 @@ namespace Tensile
                                    ContractionSolution::Inputs const&  inputs,
                                    Hardware const&                     hardware) const
     {
-        std::cout << "bbk: ContractionSolution.cpp checkpoint 000 " << this->KernelName() << std::endl;
+        std::cout << "bbk checkpoint 000 ContractionSolution.cpp " << this->KernelName() << std::endl;
 
         if(Debug::Instance().printWinningKernelName())
             std::cout << "Running kernel: " << this->KernelName() << std::endl;
@@ -915,7 +915,8 @@ namespace Tensile
         }
 
 
-  
+        std::cout << "bbk checkpoint 004 ContractionSolution.cpp: " << problemType.aType << " " << problemType.bType << " " << problemType.cType << " " << 
+                                                                       problemType.dType << " " << alphaType  << " " << betaType << " " << std::endl;
         auto contractionInputsTypeId = ContractionInputs::TypeId(problemType.aType,
                                                                  problemType.bType,
                                                                  problemType.cType,
@@ -923,6 +924,10 @@ namespace Tensile
                                                                  alphaType,
                                                                  betaType);
 
+        std::cout << "bbk checkpoint 005 ContractionSolution.cpp: " << contractionInputsTypeId << 
+                    " ContractionInputs_H_H_H: " << ContractionInputs_H_H_H::TypeId() <<
+                    " ContractionInputs_H_H_S: " << ContractionInputs_H_H_S::TypeId() << "\n";
+        
         switch(contractionInputsTypeId)
         {
         case ContractionInputs_S_S_S::TypeId():
