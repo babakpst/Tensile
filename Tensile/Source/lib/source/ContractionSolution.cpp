@@ -909,8 +909,8 @@ namespace Tensile
         if(alphaType == DataType::None)
         {
             std::cout << "bbk checkpoint 001 ContractionSolution.cpp are we getting here? " <<  std::endl;
-            //alphaType = problemType.aType == DataType::BFloat16 ? DataType::Float : problemType.dType; // bbk original
-            alphaType = (problemType.aType == DataType::BFloat16 || problemType.aType == DataType::Half) ? DataType::Float : problemType.dType; // bbk original
+            alphaType = problemType.aType == DataType::BFloat16 ? DataType::Float : problemType.dType; // bbk original
+            //alphaType = (problemType.aType == DataType::BFloat16 || problemType.aType == DataType::Half) ? DataType::Float : problemType.dType; // bbk original
         }
         if(betaType == DataType::None)
         {
