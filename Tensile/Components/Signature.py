@@ -24,77 +24,82 @@ from ..Common import globalParameters, gfxName
 
 from math import ceil
 
-srcValueTypeDict = {
-    "f16":  "Struct",
-    "i8":   "I8",
-    "f32":  "F32",
-    "f64":  "F64",
-    "f32c": "F64",
-    "f64c": "F64",
-    "bf16": "Struct"
-}
+# bbk dlt
+# srcValueTypeDict = {
+#     "f16":  "Struct",
+#     "i8":   "I8",
+#     "f32":  "F32",
+#     "f64":  "F64",
+#     "f32c": "F64",
+#     "f64c": "F64",
+#     "bf16": "Struct"
+# }
 
-dstValueTypeDict = {
-    "f16":  "Struct",
-    "i8":   "I32",
-    "f32":  "F32",
-    "f64":  "F64",
-    "f32c": "F64",
-    "f64c": "F64",
-    "bf16": "Struct"
-}
+# bbk dlt
+# dstValueTypeDict = {
+#     "f16":  "Struct",
+#     "i8":   "I32",
+#     "f32":  "F32",
+#     "f64":  "F64",
+#     "f32c": "F64",
+#     "f64c": "F64",
+#     "bf16": "Struct"
+# }
 
-cptValueTypeDict = {
-    "f16":  "F16",
-    "i8":   "I32",
-    "f32":  "F32",
-    "f64":  "F64",
-    "f32c": "F64",
-    "f64c": "Struct",
-    "bf16": "F32"
-}
+# bbk dlt
+# cptValueTypeDict = {
+#     "f16":  "F16",
+#     "i8":   "I32",
+#     "f32":  "F32",
+#     "f64":  "F64",
+#     "f32c": "F64",
+#     "f64c": "Struct",
+#     "bf16": "F32"
+# }
 
-def getSrcValueType(kernel, cov):
-    srcValueType = srcValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()]
-    if kernel["ProblemType"]["DataType"].isHalf() and not kernel["ProblemType"]["HighPrecisionAccumulate"]:
-        srcValueType = "F16"
-    if cov == "V3":
-        srcValueType = srcValueType.lower()
-    return srcValueType
+# bbk dlt
+# def getSrcValueType(kernel, cov):
+#     srcValueType = srcValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()]
+#     if kernel["ProblemType"]["DataType"].isHalf() and not kernel["ProblemType"]["HighPrecisionAccumulate"]:
+#         srcValueType = "F16"
+#     if cov == "V3":
+#         srcValueType = srcValueType.lower()
+#     print(" bbk ====SrcValueType: {}, new-lower: {}, new-upper: {}".format(srcValueType, kernel["ProblemType"]["DataType"].toNameAbbrev(), kernel["ProblemType"]["DataType"].toNameAbbrev().upper()))
+#     return srcValueType
 
-def getDstValueType(kernel, cov):
-    dstValueType = dstValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()]
-    if kernel["ProblemType"]["DataType"].isHalf() and not kernel["ProblemType"]["HighPrecisionAccumulate"]:
-        dstValueType = "F16"
-    if cov == "V3":
-        dstValueType = dstValueType.lower()
-    return dstValueType
+# bbk dlt
+# def getDstValueType(kernel, cov):
+#     dstValueType = dstValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()]
+#     if kernel["ProblemType"]["DataType"].isHalf() and not kernel["ProblemType"]["HighPrecisionAccumulate"]:
+#         dstValueType = "F16"
+#     if cov == "V3":
+#         dstValueType = dstValueType.lower()
 
-def getCptValueType(kernel, cov):
-    if kernel["ProblemType"]["DataType"].isHalf() and kernel["ProblemType"]["HighPrecisionAccumulate"]:
-        cptValueType = "F32"
-    else:
-        cptValueType = cptValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()]
+#     print(" bbk ====DstValueType: {}, new-lower: {}, new-upper: {}".format(dstValueType, kernel["ProblemType"]["DestDataType"].toNameAbbrev(), kernel["ProblemType"]["DestDataType"].toNameAbbrev().upper()))
+#     return dstValueType
 
-    if cov == "V3":
-        cptValueType = cptValueType.lower()
-    return cptValueType
+# bbk dlt
+# def getCptValueType(kernel, cov):
+#     if kernel["ProblemType"]["DataType"].isHalf() and kernel["ProblemType"]["HighPrecisionAccumulate"]:
+#         cptValueType = "F32"
+#     else:
+#         cptValueType = cptValueTypeDict[kernel["ProblemType"]["DataType"].toNameAbbrev()]
+#     if cov == "V3":
+#         cptValueType = cptValueType.lower() # careful here.
+#     print(" bbk cptType: {}, new-lower: {}, new-upper: {}".format(cptValueType, kernel["ProblemType"]["ComputeDataType"].toNameAbbrev(), kernel["ProblemType"]["ComputeDataType"].toNameAbbrev().upper()))
+#     return cptValueType
 
-def getCptByte(kernel):
-    cptByte = 4
-    if kernel["ProblemType"]["DataType"].isHalf() and not kernel["ProblemType"]["HighPrecisionAccumulate"]:
-        cptByte = 2
-    elif kernel["ProblemType"]["DataType"].isDouble() or kernel["ProblemType"]["DataType"].isSingleComplex():
-        cptByte = 8
-    elif kernel["ProblemType"]["DataType"].isDoubleComplex():
-        cptByte = 16
-    return cptByte
-
-def getCptSize(kernel):
-    return str(getCptByte(kernel))
-
-def getCptAlign(kernel):
-    return str(getCptByte(kernel))
+# bbk dlt
+#def getCptByte(kernel):
+#    cptByte = 4
+#    if kernel["ProblemType"]["DataType"].isHalf() and not kernel["ProblemType"]["HighPrecisionAccumulate"]:
+#        cptByte = 2
+#    elif kernel["ProblemType"]["DataType"].isDouble() or kernel["ProblemType"]["DataType"].isSingleComplex():
+#        cptByte = 8
+#    elif kernel["ProblemType"]["DataType"].isDoubleComplex():
+#        cptByte = 16
+#    print(" bbk ====cptBye: {} new: {}".format(cptByte,kernel["ProblemType"]["ComputeDataType"].numBytes()))
+#    return cptByte
 
 class SignatureCOV2(Signature):
     kernel = {"CodeObjectVersion": "V2"}
@@ -218,12 +223,14 @@ class SignatureCOV2(Signature):
         kStr += writer.comment1("DirectToLdsB=%s" % kernel["DirectToLdsB"])
         kStr += writer.comment1("UseSgprForGRO=%s" % kernel["_UseSgprForGRO"])
 
-        srcValueType = getSrcValueType(kernel, "V2")
-        dstValueType = getDstValueType(kernel, "V2")
-        cptValueType = getCptValueType(kernel, "V2")
-        cptByte = getCptByte(kernel)
-        # cptSize = getCptSize(kernel)
-        # cptAlign = getCptAlign(kernel)
+        #srcValueType = getSrcValueType(kernel, "V2") # bbk dlt
+        srcValueType = kernel["ProblemType"]["DataType"].toNameAbbrev().upper()
+        #dstValueType = getDstValueType(kernel, "V2") # bbk dlt
+        dstValueType = kernel["ProblemType"]["DestDataType"].toNameAbbrev().upper()
+        #cptValueType = getCptValueType(kernel, "V2") # bbk dlt
+        cptValueType = kernel["ProblemType"]["ComputeDataType"].toNameAbbrev().upper()
+        # cptByte = getCptByte(kernel) # bbk dlt
+        cptByte = kernel["ProblemType"]["ComputeDataType"].numBytes()
 
         # Codeobject V2 metadata
         kStr += ".amd_amdgpu_hsa_metadata\n"
@@ -439,12 +446,14 @@ class SignatureCOV3(Signature):
         kStr += writer.comment1("DirectToLdsB=%s" % kernel["DirectToLdsB"])
         kStr += writer.comment1("UseSgprForGRO=%s" % kernel["_UseSgprForGRO"])
 
-        srcValueType = getSrcValueType(kernel, "V3")
-        dstValueType = getDstValueType(kernel, "V3")
-        cptValueType = getCptValueType(kernel, "V3")
-        cptByte = getCptByte(kernel)
-        # cptSize = getCptSize(kernel)
-        # cptAlign = getCptAlign(kernel)
+        #srcValueType = getSrcValueType(kernel, "V3") # bbk dlt
+        srcValueType = kernel["ProblemType"]["DataType"].toNameAbbrev()
+        #dstValueType = getDstValueType(kernel, "V3") # bbk dlt
+        dstValueType = kernel["ProblemType"]["DestDataType"].toNameAbbrev()
+        #cptValueType = getCptValueType(kernel, "V3") # bbk dlt
+        cptValueType = kernel["ProblemType"]["ComputeDataType"].toNameAbbrev()
+        # cptByte = getCptByte(kernel) # bbk dlt
+        cptByte = kernel["ProblemType"]["ComputeDataType"].numBytes()
 
         # Codeobject V3 metadata
         kStr += ".amdgpu_metadata\n"

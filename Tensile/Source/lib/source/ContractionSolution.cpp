@@ -896,8 +896,9 @@ namespace Tensile
 
         // Backward-compatible: when setAlpha/BetaType() wasn't called, use the old way
         // Could remove after rocBLAS is updated
-        if(alphaType == DataType::None)
+        if(alphaType == DataType::None)  // bbk remove this
         {
+            //bbk alphaType
             alphaType
                 = problemType.aType == DataType::BFloat16 ? DataType::Float : problemType.dType;
         }
@@ -913,6 +914,7 @@ namespace Tensile
                                                                  alphaType,
                                                                  betaType);
 
+        // bbk
         switch(contractionInputsTypeId)
         {
         case ContractionInputs_S_S_S::TypeId():

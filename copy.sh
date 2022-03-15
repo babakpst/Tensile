@@ -1,0 +1,11 @@
+cp build_d/DGEMM.out   zOUT/
+cp build_s/SGEMM.out   zOUT/
+cp build_z/ZGEMM.out   zOUT/
+cp build_c/CGEMM.out   zOUT/
+cp build_h/HGEMM.out   zOUT/
+cp build_HHS/HHS.out   zOUT/
+cp build_HSS/HSS.out   zOUT/
+cp build_BBS/BBS.out   zOUT/
+cp build_BSS/BSS.out   zOUT/
+cp build_4xi8/4xi8.out   zOUT/
+cp build_I8II/I8II.out   zOUT/

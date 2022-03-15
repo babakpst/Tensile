@@ -1,0 +1,139 @@
+diff --git a/Tensile/Common.py b/Tensile/Common.py
+index c06636fa..4ee022d8 100644
+--- a/Tensile/Common.py
++++ b/Tensile/Common.py
+@@ -389,27 +389,27 @@ validParameters = {
+     # LoopIters = DepthU / LocalSplitU
+     # (LoopIters /= MatrixInstruction_K)
+     # ex. MT64x128x16_MI32x32x4x2_PLR1, we'll have 4 LoopIters, prefetch read 1 iteration, with 2 VGPRs buffer (2=min(1+1,4))
+-    #     befor loop:       plr[0]
++    #     before loop:       plr[0]
+     #           loop: iter0:plr[1] MAC_r[0], iter1:plr[0] MAC_r[1], iter2:plr[1] MAC_r[0], iter3:plr[0] MAC_r[1]
+     #   no load loop: iter0:plr[1] MAC_r[0], iter1:plr[0] MAC_r[1], iter2:plr[1] MAC_r[0], iter3:       MAC_r[1]
+     #
+     # ex. MT64x128x16_MI32x32x4x2_PLR3, we'll have 4 LoopIters, prefetch read 3 iteration, with 4 VGPRs buffer (4=min(3+1,4))
+-    #     befor loop:       plr[0] plr[1] plr[2]
++    #     before loop:       plr[0] plr[1] plr[2]
+     #           loop: iter0:plr[3] MAC_r[0], iter1:plr[0] MAC_r[1], iter2:plr[1] MAC_r[2], iter3:plr[2] MAC_r[3]
+     #   no load loop: iter0:plr[3] MAC_r[0], iter1:       MAC_r[1], iter2:       MAC_r[2], iter3:       MAC_r[3]
+     #
+     # ex. MT64x128x16_MI32x32x4x2_PLR5, we'll have 4 LoopIters, prefetch read 5%4=1 iteration, with 4 VGPRs buffer (4=min(5+1,4))
+-    #     befor loop:       plr[0]
++    #     before loop:       plr[0]
+     #           loop: iter0:plr[1] MAC_r[0], iter1:plr[2] MAC_r[1], iter2:plr[3] MAC_r[2], iter3:plr[0] MAC_r[3]
+     #   no load loop: iter0:plr[1] MAC_r[0], iter1:plr[2] MAC_r[1], iter2:plr[3] MAC_r[2], iter3:       MAC_r[3]
+     #
+     # ex. MT64x128x16_MI32x32x4x2_PLR5_LRVW8, we'll have 4 LoopIters, prefetch read 5%4=1 iteration, with 4 VGPRs buffer (4=min(5+1,4)) , each read read 2 iterations
+-    #     befor loop:       plr[0:1]
++    #     before loop:       plr[0:1]
+     #           loop: iter0:plr[2:3] MAC_r[0], iter1: MAC_r[1], iter2: MAC_r[2], iter3:plr[0:1] MAC_r[3]
+     #   no load loop: iter0:plr[2:3] MAC_r[0], iter1: MAC_r[1], iter2: MAC_r[2], iter3:         MAC_r[3]
+     #
+     # ex. MT64x128x16_MI32x32x4x2_PLR7, we'll have 4 LoopIters, prefetch read 7%4=3 iteration, with 4 VGPRs buffer (=min(7+1,4)) --> Exactly the same as PLR3
+-    #     befor loop:       plr[0]
++    #     before loop:       plr[0]
+     #           loop: iter0:plr[1] MAC_r[0], iter1:plr[2] MAC_r[1], iter2:plr[3] MAC_r[2], iter3:plr[0] MAC_r[3]
+     #   no load loop: iter0:plr[1] MAC_r[0], iter1:plr[2] MAC_r[1], iter2:plr[3] MAC_r[2], iter3:       MAC_r[3]
+     "PrefetchLocalRead":          list(range(128+1)),
+@@ -535,7 +535,7 @@ validParameters = {
+     # the next tile in the sequence.
+     "PrefetchAcrossPersistent":    [0, 1],
+ 
+-    # Changes the behaviour of prefetch across persistent.
++    # Changes the behavior of prefetch across persistent.
+     # Mode 0 is default, works for all sizes
+     # Mode 1 disables static tile setup for prefetch and merges prefetch with ord. noLoadLoop,
+     #   requires AssertSummationElementMultiple == DepthU
+@@ -649,7 +649,7 @@ validParameters = {
+     "AssertSummationElementMultiple": [1,2,4,8,16,32],
+ 
+     # Kernel generator will assume that the FreeIndex[0] size is some multiple of the element size
+-    # and use this to optimize the kernel.
++    # and uses this to optimize the kernel.
+     # FreeIndex[0] is usually letter "I"
+     # (Recommended AF0EM value is 8 for half, 4 for single, 2 for double)
+     #
+@@ -663,13 +663,13 @@ validParameters = {
+     #
+     # Store Optimizations:
+     #  - Can vectorize stores in edge tiles.  Vector width can be up to AF0EM.
+-    #   (since C matrix is always coalesced in Free0 index diretion and this assertion guarantees the index element multiple)
++    #   (since C matrix is always coalesced in Free0 index direction and this assertion guarantees the index element multiple)
+     #
+     # 1 indicates no assertion (since all sizes are multiples of 1)
+     "AssertFree0ElementMultiple" : [1,2,4,8],
+ 
+     # Kernel generator will assume that the FreeIndex[1] size is some multiple of the element size
+-    # and use this to optimize the kernel.
++    # and uses this to optimize the kernel.
+     # FreeIndex[1] is usually letter "J"
+     # (Recommended AF1EM value is 8 for half, 4 for single, 2 for double)
+ 
+@@ -731,7 +731,7 @@ validParameters = {
+     #
+     # The tile assignment C are same as with StaggerOffset=0 ; the difference is the
+     # order that the summation elements are added.
+-    # GRO will wrap back to the row start start when the edge is reached.
++    # GRO will wrap back to the row start when the edge is reached.
+     #
+     # This can be effective for TLU=0 style matrices where the K dimension is a large power-of-2.
+     # In this case the start of each row of the tile is separated by an exact power-of-2
+diff --git a/Tensile/Source/client/main.cpp b/Tensile/Source/client/main.cpp
+index e4a8dba6..1cffc618 100644
+--- a/Tensile/Source/client/main.cpp
++++ b/Tensile/Source/client/main.cpp
+@@ -470,11 +470,16 @@ int main(int argc, const char* argv[])
+ {
+     using namespace Tensile;
+     using namespace Tensile::Client;
++    
++    //printf(" bbk checkpoint 000 main client \n ");
+ 
+     auto args = parse_args(argc, argv);
++    //printf(" bbk checkpoint 100 main client \n ");
+ 
+     ClientProblemFactory problemFactory(args);
++    //printf(" bbk checkpoint 200 main client \n ");
+ 
++    
+     auto        hardware = GetHardware(args);
+     hipStream_t stream   = GetStream(args);
+ 
+@@ -482,6 +487,9 @@ int main(int argc, const char* argv[])
+     Tensile::hip::SolutionAdapter adapter;
+     LoadCodeObjects(args, adapter);
+ 
++    //printf(" bbk checkpoint 300 main client \n ");
++
++
+     auto problems        = problemFactory.problems();
+     int  firstProblemIdx = args["problem-start-idx"].as<int>();
+     int  numProblems     = args["num-problems"].as<int>();
+@@ -554,8 +562,11 @@ int main(int argc, const char* argv[])
+     {
+         listeners.preBenchmarkRun();
+ 
++        //printf(" bbk checkpoint 001 main client \n ");
++
+         for(int problemIdx = firstProblemIdx; problemIdx <= lastProblemIdx; problemIdx++)
+         {
++            //printf(" bbk checkpoint 002 \n ");
+             auto& problem = problems[problemIdx];
+             problem.setWorkspaceSize(dataInit->workspaceSize());
+ 
+@@ -572,6 +583,7 @@ int main(int argc, const char* argv[])
+ 
+             while(solutionIterator->moreSolutionsInProblem())
+             {
++                //printf(" bbk checkpoint 003 \n ");
+                 auto solution = solutionIterator->getSolution();
+ 
+                 listeners.preSolution(*solution);
+@@ -582,6 +594,7 @@ int main(int argc, const char* argv[])
+                     {
+                         while(listeners.needMoreRunsInSolution())
+                         {
++                            //printf(" bbk checkpoint 004 \n ");
+                             auto inputs = dataInit->prepareGPUInputs(problem);
+ 
+                             auto kernels = solution->solve(problem, *inputs, *hardware);

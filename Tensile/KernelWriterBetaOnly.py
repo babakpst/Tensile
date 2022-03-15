@@ -61,6 +61,7 @@ class KernelWriterBetaOnly(KernelWriterBase):
     ptrStr = self.state["ProblemType"]["DestDataType"].toDevice(self.language)
     if self.state["_GlobalAccumulation"]:
       ptrStr = self.state["ProblemType"]["ComputeDataType"].toDevice(self.language)
+      # bbk fix TODO
       if self.state["ProblemType"]["DataType"].isHalf() and self.state["ProblemType"]["HighPrecisionAccumulate"]:
         ptrStr = DataType('single').toDevice(self.language)
     isStridedBuffer = self.state["ProblemType"]["StridedBatched"] or self.state["_GlobalAccumulation"]

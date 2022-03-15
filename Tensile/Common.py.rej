@@ -1,0 +1,19 @@
+diff a/Tensile/Common.py b/Tensile/Common.py	(rejected hunks)
+@@ -535,7 +535,7 @@ validParameters = {
+     # the next tile in the sequence.
+     "PrefetchAcrossPersistent":    [0, 1],
+ 
+-    # Changes the behaviour of prefetch across persistent.
++    # Changes the behavior of prefetch across persistent.
+     # Mode 0 is default, works for all sizes
+     # Mode 1 disables static tile setup for prefetch and merges prefetch with ord. noLoadLoop,
+     #   requires AssertSummationElementMultiple == DepthU
+@@ -649,7 +649,7 @@ validParameters = {
+     "AssertSummationElementMultiple": [1,2,4,8,16,32],
+ 
+     # Kernel generator will assume that the FreeIndex[0] size is some multiple of the element size
+-    # and use this to optimize the kernel.
++    # and uses this to optimize the kernel.
+     # FreeIndex[0] is usually letter "I"
+     # (Recommended AF0EM value is 8 for half, 4 for single, 2 for double)
+     #
