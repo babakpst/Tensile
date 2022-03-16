@@ -101,7 +101,6 @@ namespace Tensile
 
     bool Debug::printWinningKernelName() const
     {
-        printf(" bbk are we here? %d \n",m_value & 0x8000);
         return m_value & 0x8000;
     }
 

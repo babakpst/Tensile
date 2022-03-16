@@ -1334,24 +1334,16 @@ class KernelWriterAssembly(KernelWriter):
 
     # already covers: dgemm, cgemm, zgemm, sgemm
     #               : hgemm  + !HPA ([H/H/H] compute = internal = f16)
-    #               : hgemm  +  HPA ([H/H/S] compute = internal = f32) -> new
-    #               : bfgemm +  HPA (compute = internal = f32)
-    #               : int8x4-gemm   (internal = i32)
-    # special cases : hgemm  +  HPA ([H/H/H] compute = f16, but internal = f32)  # bbk adjust the comment: There is a distinction btw compute and internal
+    #               : hgemm  +  HPA ([H/H/S] or [H/S/S] compute = internal = f32)
+    #               : bfgemm +  HPA ([B/B/S] or [H/S/S] compute = internal = f32)
+    #               : int8x4-gemm   (internal = i32)    
     self.bpeCinternal = int(self.bpr * kernel["ProblemType"]["ComputeDataType"].numRegisters())
 
-    # bbk fix TODO
     #jgolds Need to check device for support
-    if kernel["ProblemType"]["HighPrecisionAccumulate"]:
-      # Special case for HPA
-      if kernel["ProblemType"]["DataType"].isHalf() or kernel["ProblemType"]["DataType"].isBFloat16():
-        self.bpeCinternal = int(self.bpr*1) # mainly for [H/H/H], internal = f32
-      elif kernel["ProblemType"]["DataType"].isInt8x4() or kernel["ProblemType"]["DataType"].isInt8():
-        # numRegisters for Int8x4 = numRegisters for Int32 = 1
-        # Cinternal == ComputeType == int32
-        pass
-      else:
-        # HPA not allowed in dgemm, cgemm, zgemm, sgemm
+    # HPA not allowed in dgemm, cgemm, zgemm, sgemm
+    if kernel["ProblemType"]["HighPrecisionAccumulate"] and \
+       not (kernel["ProblemType"]["DataType"].isHalf() or kernel["ProblemType"]["DataType"].isBFloat16() or \
+          kernel["ProblemType"]["DataType"].isInt8x4() or kernel["ProblemType"]["DataType"].isInt8()):
         print("HighPrecisionAccumulate only valid when DataType is half, bf16, Int8x4, Int8. Forcing HPA to False")
         kernel["ProblemType"]["HighPrecisionAccumulate"] = False
 
@@ -2293,7 +2285,6 @@ class KernelWriterAssembly(KernelWriter):
     self.getNamedLabel("KernelEnd%s"%(unrollChar))
     # shift vectors determined later
 
-    # bbk check it out
     canCheckValueC = (kernel["ProblemType"]["DataType"].isHalf() or kernel["ProblemType"]["DataType"].isBFloat16()) and \
                       kernel["ProblemType"]["HighPrecisionAccumulate"]
     canCheckValueC = canCheckValueC or kernel["ProblemType"]["DataType"].isSingle()
@@ -9214,11 +9205,6 @@ class KernelWriterAssembly(KernelWriter):
 
     bytesPerElem = kernel["ProblemType"]["ComputeDataType"].numBytes()
     regsPerElem  = kernel["ProblemType"]["ComputeDataType"].numRegisters()
-    # bbk fix TODO
-    if kernel["ProblemType"]["DataType"].isHalf() and kernel["ProblemType"]["HighPrecisionAccumulate"]:
-      bytesPerElem = DataType('single').numBytes()
-      regsPerElem  = DataType('single').numRegisters()
-
     bytesPerVector = kernel["VectorWidth"] * bytesPerElem
     bytesPerStep = min(bytesPerVector, 16) # max length of ds inst is 16 bytes(128bits)
     regsPerStep  = int((bytesPerStep+3)//4)
@@ -9263,11 +9249,6 @@ class KernelWriterAssembly(KernelWriter):
     # calculate parameters
     bytesPerElem = kernel["ProblemType"]["ComputeDataType"].numBytes()
     regsPerElem  = kernel["ProblemType"]["ComputeDataType"].numRegisters()
-    # bbk fix TODO
-    if kernel["ProblemType"]["DataType"].isHalf() and kernel["ProblemType"]["HighPrecisionAccumulate"]:
-      bytesPerElem = DataType('single').numBytes()
-      regsPerElem  = DataType('single').numRegisters()
-
     bytesPerVector = kernel["GlobalWriteVectorWidth"] * bytesPerElem
     bytesPerStep = 16
     while (bytesPerVector % bytesPerStep) != 0:
@@ -9302,7 +9283,6 @@ class KernelWriterAssembly(KernelWriter):
   def localSplitUReduction(self, kernel):
     kStr = ""
 
-    # bbk fix TODO
     is_non_hpa_fp16 = kernel["ProblemType"]["DataType"].isHalf() and (not kernel["ProblemType"]["HighPrecisionAccumulate"])
     elementStep = 2 if is_non_hpa_fp16 else 1
     regsPerElem = kernel["ProblemType"]["DataType"].numRegisters()
@@ -10320,7 +10300,6 @@ class KernelWriterAssembly(KernelWriter):
         if self.cfg.numVgprsPerDataPerVI > 0:
           if self.cfg.halfDataRegPerVI:
             # TODO- check (H,H,H,H,S,S)
-            # bbk fix TODO
             if kernel["ProblemType"]["HighPrecisionAccumulate"] and \
                (kernel["ProblemType"]["DataType"].isBFloat16() or kernel["ProblemType"]["DataType"].isHalf()):
               data = kw.vgprPool.checkOutAligned(int(2*self.cfg.numVgprsPerDataPerVI*self.cfg.gwvw), \
@@ -11000,7 +10979,6 @@ class KernelWriterAssembly(KernelWriter):
       numTmpVgpr = 2 + 3 # GLOBAL_OFFSET_C needs 3, plus 2 tmps?
     tmpVgpr = self.vgprPool.checkOutAligned(numTmpVgpr, 2, "store tmps")
 
-    # bbk fix TODO
     isHpaBF16 = kernel["ProblemType"]["DestDataType"].isBFloat16() and kernel["ProblemType"]["HighPrecisionAccumulate"]
     bf16CVTVgpr = self.vgprPool.checkOut(4) if isHpaBF16 else None
 
@@ -11458,7 +11436,6 @@ class KernelWriterAssembly(KernelWriter):
         kStr += addrCalc.incrementToNextRow(kernel, "D", ss, tmpS01)
       if kernel["ProblemType"]["DestDataType"].isHalf() or kernel["ProblemType"]["DestDataType"].isBFloat16():
         
-        # bbk fix TODO
         if not kernel["ProblemType"]["HighPrecisionAccumulate"]:
           # (H,H,H,H,H,H), internal H
           kStr += self.chooseGlobalWrite(useBuffer, bps, sumIdx//2, rpv, \
@@ -11466,7 +11443,7 @@ class KernelWriterAssembly(KernelWriter):
         else:
           # (B,B,B,B,S,S), internal S
           # (H,H,H,H,H,H), internal S
-          # (H,H,H,H,S,S), internal S -> new
+          # (H,H,H,H,S,S), internal S
           kStr += self.chooseGlobalWrite(useBuffer, bps, sumIdx, rpv, \
                     addr0, addr1, addrCalc.globalOffset, ntStr, hi16=0)
       elif kernel["ProblemType"]["DestDataType"].isInt32() or kernel["ProblemType"]["DestDataType"].isSingle():
@@ -11536,13 +11513,12 @@ class KernelWriterAssembly(KernelWriter):
       for vi in range(0, gwvw):
         sumIdxV = elementSumIdx[elementIdx] + vi
         
-        # bbk fix TODO
         if kernel["ProblemType"]["ComputeDataType"].isHalf():
           # (h,h,h,h,h,h), internal alpha is f16 (2-16bits)
           if not kernel["ProblemType"]["HighPrecisionAccumulate"]:
             if sumIdxV%2:
               kStr += inst("v_pk_mul_f16", vgpr("ValuC+%u"%(sumIdxV//2)), sgpr("Alpha"), vgpr("ValuC+%u"%(sumIdxV//2)), "*= alpha sumIdx=%u vi=%u"%(elementSumIdx[elementIdx], vi))
-          # (h,h,h,h,h,h) + HPA, internal alpha is cvt to single
+          # (h,h,h,h,h,h) + HPA (will be converted to (h,h,h,h,s,s)), internal alpha is single
           else:
             kStr += inst("v_mul_f32", vgpr("ValuC+%u"%sumIdxV), sgpr("Alpha"), vgpr("ValuC+%u"%sumIdxV), "*= alpha")
             if self.db["ForceExpectedValue"]:
@@ -11564,7 +11540,7 @@ class KernelWriterAssembly(KernelWriter):
             kStr += inst("s_mov_b32", sgpr(tmpS01), self.db["ValueCExpectedValue"], "Move expected value")
             kStr += self.assert_eq(vgpr("ValuC+%u"%sumIdxV), sgpr(tmpS01))
 
-        # sgemm, HPA-bfgemm(b,b,b,b,s,s), and HPA-hgemm(h,h,h,h,s,s) (new)
+        # sgemm, HPA-bfgemm(b,b,b,b,s,s), and HPA-hgemm(h,h,h,h,s,s)
         elif kernel["ProblemType"]["ComputeDataType"].isSingle():
           kStr += inst("v_mul_f32", vgpr("ValuC+%u"%sumIdxV), sgpr("Alpha"), vgpr("ValuC+%u"%sumIdxV), "*= alpha" )
           if self.db["ForceExpectedValue"]:
@@ -12222,16 +12198,12 @@ class KernelWriterAssembly(KernelWriter):
     else:
       # edge has v_cndmask so loads or stores may not issue, hard to track vmcnt:
       interleaveStoreVmcnt = self.interleaveStoreVmcnt and not edge
-
       for elementIdx in range(0, len(batchElements)):
         for vi in range(0, gwvw):
           sumIdxV = ss.elementSumIdx[elementIdx] + vi
-          # covers sgemm, bfgemm, hgemm(HPA), int8 (int8x4?)
-          # bbk fix TODO
+          # covers sgemm, gemm_ex(HHS/HSS/BBS/BSS (HPA=T)), int8 (int8x4?)
           if kernel["ProblemType"]["ComputeDataType"].isInt32() or \
-             kernel["ProblemType"]["ComputeDataType"].isSingle() or \
-             (kernel["ProblemType"]["ComputeDataType"].isHalf() and \
-             kernel["ProblemType"]["HighPrecisionAccumulate"]):
+             kernel["ProblemType"]["ComputeDataType"].isSingle(): # covers sgemm/gemm_ex(HHS/HSS/BBS/BSS)
               if self.db["ForceExpectedValue"]:
                 kStr += inst("v_mov_b32", vgpr("ValuC+%u"%sumIdxV), self.db["ValueCExpectedValue"], "force expected value" )
               if self.db["ForceVSerial"]:
@@ -12256,7 +12228,6 @@ class KernelWriterAssembly(KernelWriter):
       kStr += self.comment("apply mask, calc new C and issue writes")
       #kStr += self.bomb() # can see store addresses just before the store inst
 
-      # bbk fix TODO
       if kernel["ProblemType"]["DestDataType"].isBFloat16() and kernel["ProblemType"]["HighPrecisionAccumulate"]:
         vgprBf16Temp = bf16CVTVgpr
         vgprBf16Mask = vgprBf16Temp + 1
@@ -12322,7 +12293,6 @@ class KernelWriterAssembly(KernelWriter):
             dataV = ss.elementData[elementIdx] + int(vi*ss.cfg.numVgprsPerDataPerVI)
             sumIdxV = ss.elementSumIdx[elementIdx] + vi
             if kernel["ProblemType"]["DestDataType"].isHalf():
-              # bbk fix TODO
               if not kernel["ProblemType"]["HighPrecisionAccumulate"]:
                 if sumIdxV%2==0:
                   # dataV+0 = new c = old c*beta
@@ -12345,7 +12315,6 @@ class KernelWriterAssembly(KernelWriter):
                     "op_sel:[0,%u,0] op_sel_hi:[0,1,0]" % (hi16), \
                     "//C*=beta")
 
-            # bbk check this out
             elif kernel["ProblemType"]["DestDataType"].isBFloat16():
               if kernel["ProblemType"]["HighPrecisionAccumulate"]:
                 # dataV+0 = new c = old c*beta + rC

@@ -568,7 +568,6 @@ class KernelWriterSource(KernelWriter):
       else:
         if kernel["ProblemType"]["UseBeta"]:
           # dst = alpha*reg + dst*beta
-          # bbk check this out
           if kernel["ProblemType"]["HighPrecisionAccumulate"] and \
             kernel["ProblemType"]["DataType"].isBFloat16() and \
             kernel["ProblemType"]["DestDataType"].isBFloat16():
@@ -843,9 +842,11 @@ class KernelWriterSource(KernelWriter):
     ptrStr = kernel["ProblemType"]["DestDataType"].toDevice(self.language)
     if kernel["_GlobalAccumulation"]:
       ptrStr = kernel["ProblemType"]["ComputeDataType"].toDevice(self.language)
+      print(" bbk before ptrStr {}".format(ptrStr))
       # bbk fix TODO
       if kernel["ProblemType"]["DataType"].isHalf() and kernel["ProblemType"]["HighPrecisionAccumulate"]:
         ptrStr = DataType('single').toDevice(self.language)
+        print(" bbk after ptrStr {}".format(ptrStr))
 
     isStridedBuffer = kernel["ProblemType"]["StridedBatched"] or kernel["_GlobalAccumulation"]
     ptrStr  += ("" if isStridedBuffer else "*")
@@ -973,7 +974,6 @@ class KernelWriterSource(KernelWriter):
          "DataType"].zeroString(self.language, 1), \
          self.endLine )
 
-    # bbk check this out
     # TODO - use a different value for OOB data
     #        Currently use zero since Tensile already has handy functions to create zero in different types
     if kernel["ProblemType"]["HighPrecisionAccumulate"] and kernel["ProblemType"]["DataType"].isBFloat16():
@@ -984,7 +984,6 @@ class KernelWriterSource(KernelWriter):
     kStr += "  /* registers for MAC's */" + self.endLine
     # TODO: change to kStr += "  COMPUTE_DATA_TYPE rC[TT%s*TT%s];%s" \ % (self.tileChar0, self.tileChar1, self.endLine )
     # with above there is no need for the if below
-    # bbk What about 4xi8? 
     if kernel["ProblemType"]["HighPrecisionAccumulate"] and (kernel["ProblemType"]["DataType"].isHalf() or kernel["ProblemType"]["DataType"].isBFloat16()):
         kStr += "  float rC[TT%s*TT%s];%s" \
             % (self.tileChar0, self.tileChar1, self.endLine )

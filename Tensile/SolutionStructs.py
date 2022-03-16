@@ -826,6 +826,7 @@ class ProblemType(Mapping):
     for key in defaultProblemType:
       assignParameterWithDefault(self.state, key, config, defaultProblemType)
 
+    # adjusting all data types
     if "DataType" in config:
       self["DataType"] = DataType(config["DataType"])
     else:
@@ -840,7 +841,6 @@ class ProblemType(Mapping):
       else:
         printExit("NO dest data type or data type specified")
         self["DataType"] = DataType(0)
-
 
     if "ComputeDataType" in config:
       self["ComputeDataType"] = DataType(config["ComputeDataType"])
@@ -2490,10 +2490,6 @@ class Solution(collections.abc.Mapping):
       if state["GlobalSplitU"] > 1:
         computeName  = state["ProblemType"]["ComputeDataType"].toName()
         computeBytes = state["ProblemType"]["ComputeDataType"].numBytes()
-        # bbk fix TODO: Affects HHS/HSS. Why not the above takes care of it?
-        if state["ProblemType"]["DataType"].isHalf() and state["ProblemType"]["HighPrecisionAccumulate"]:
-          computeName  = DataType('single').toName()
-          computeBytes = DataType('single').numBytes()
 
         if state["GlobalSplitUAlgorithm"] == 'SingleBuffer':
           if computeName != state["ProblemType"]["DestDataType"].toName():
@@ -2541,7 +2537,6 @@ class Solution(collections.abc.Mapping):
     if state["WavefrontSize"] == 32 and state["KernelLanguage"] == "Source":
       reject(state, "WavefrontSize=32 not yet supported for source kernels.")
 
-    # bbk will berejected here
     if state["EnableMatrixInstruction"]:
       if not (state["ProblemType"]["DataType"].isSingle() \
               or state["ProblemType"]["DataType"].isDouble() \
@@ -3496,9 +3491,6 @@ class Solution(collections.abc.Mapping):
       ldsNumElementsRemapC = (state["MacroTile0"]+ldsRemapPad)* state["MatrixInstN"] * state["MIWaveGroup"][1]
       if state["_GlobalAccumulation"]:
         computeBytes = state["ProblemType"]["ComputeDataType"].numBytes()
-        # bbk fix TODO
-        if state["ProblemType"]["DataType"].isHalf() and state["ProblemType"]["HighPrecisionAccumulate"]:
-          computeBytes = DataType('single').numBytes()
         ldsNumElementsRemapC *= (computeBytes / state["ProblemType"]["DestDataType"].numBytes())
       ldsSize = ldsNumElementsRemapC * state["ProblemType"]["DestDataType"].numBytes()
       if not math.log(state["MacroTile0"],2).is_integer() or \
@@ -3542,8 +3534,7 @@ class Solution(collections.abc.Mapping):
          not state["EnableMatrixInstruction"]:
         reject(state, "MIArchVgpr requires gcn support ACC_CD bit for MatrixInstruction")
         return
-      
-      # bbk fix here
+
       if not (state["ProblemType"]["ComputeDataType"].isDouble() or \
               state["ProblemType"]["ComputeDataType"].isSingle() or \
               (state["ProblemType"]["ComputeDataType"].isHalf() and state["ProblemType"]["HighPrecisionAccumulate"]) or \
@@ -3600,9 +3591,7 @@ class Solution(collections.abc.Mapping):
       numReg  = state["ProblemType"]["DestDataType"].numRegisters()
       if state["_GlobalAccumulation"]:
         numReg = state["ProblemType"]["ComputeDataType"].numRegisters()
-        # bbk fix TODO
-        if state["ProblemType"]["DataType"].isHalf() and state["ProblemType"]["HighPrecisionAccumulate"]:
-          numReg = DataType('single').numRegisters()
+
       srMaxVw = int(storeInstMaxWidth/numReg)
       if srMinVw > state["StoreRemapVectorWidth"] or srMaxVw < state["StoreRemapVectorWidth"]:
         reject(state, "StoreRemapVectorWidth %u is not allowed for this data type" % state["StoreRemapVectorWidth"])
@@ -3621,9 +3610,6 @@ class Solution(collections.abc.Mapping):
 
       if state["_GlobalAccumulation"]:
         computeBytes = state["ProblemType"]["ComputeDataType"].numBytes()
-        # bbk fix TODO
-        if state["ProblemType"]["DataType"].isHalf() and state["ProblemType"]["HighPrecisionAccumulate"]:
-          computeBytes = DataType('single').numBytes()
         multiplier = computeBytes // state["ProblemType"]["DataType"].numBytes()
       elif state["ProblemType"]["DestDataType"].numBytes() > state["ProblemType"]["DataType"].numBytes():
         # Determine ratio of output to input element size.
