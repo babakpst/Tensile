@@ -194,6 +194,7 @@ namespace Tensile
                                                          static_cast<int64_t>(zp[zi + 3])}));
                     }
                 }
+                printf(" bbk ContractionProblemFactor\n");
                 rv.back().setAlphaType(m_alphaType);
                 rv.back().setBetaType(m_betaType);
                 rv.back().setStridedBatched(m_stridedBatched);

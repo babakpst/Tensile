@@ -842,11 +842,7 @@ class KernelWriterSource(KernelWriter):
     ptrStr = kernel["ProblemType"]["DestDataType"].toDevice(self.language)
     if kernel["_GlobalAccumulation"]:
       ptrStr = kernel["ProblemType"]["ComputeDataType"].toDevice(self.language)
-      print(" bbk before ptrStr {}".format(ptrStr))
-      # bbk fix TODO
-      if kernel["ProblemType"]["DataType"].isHalf() and kernel["ProblemType"]["HighPrecisionAccumulate"]:
-        ptrStr = DataType('single').toDevice(self.language)
-        print(" bbk after ptrStr {}".format(ptrStr))
+      # bbk fixed dlt
 
     isStridedBuffer = kernel["ProblemType"]["StridedBatched"] or kernel["_GlobalAccumulation"]
     ptrStr  += ("" if isStridedBuffer else "*")

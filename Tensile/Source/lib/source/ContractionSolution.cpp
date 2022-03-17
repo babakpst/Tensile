@@ -894,6 +894,8 @@ namespace Tensile
         auto alphaType = problem.alphaType();
         auto betaType  = problem.betaType();
 
+        printf(" bbk types in ContractionSolution before: alpha %u, beta %u \n",alphaType,betaType);
+
         // Backward-compatible: when setAlpha/BetaType() wasn't called, use the old way
         // Could remove after rocBLAS is updated
         if(alphaType == DataType::None)  // bbk remove this
@@ -906,6 +908,8 @@ namespace Tensile
         {
             betaType = alphaType;
         }
+
+        printf(" bbk types in ContractionSolution before: alpha %u, beta %u\n",alphaType,betaType);
 
         auto contractionInputsTypeId = ContractionInputs::TypeId(problemType.aType,
                                                                  problemType.bType,

@@ -471,7 +471,7 @@ int main(int argc, const char* argv[])
     using namespace Tensile;
     using namespace Tensile::Client;
 
-    //printf(" bbk checkpoint 000 main client \n ");
+    printf(" bbk checkpoint 000 main client starts \n ");
 
     auto args = parse_args(argc, argv);
     //printf(" bbk checkpoint 100 main client \n ");
@@ -597,7 +597,7 @@ int main(int argc, const char* argv[])
                             //printf(" bbk checkpoint 004 \n ");
                             auto inputs = dataInit->prepareGPUInputs(problem);
 
-                            // bbk:
+                            // bbk: Calling the ContractionSolution
                             auto kernels = solution->solve(problem, *inputs, *hardware);
                             //printf(" bbk checkpoint 005 after solving \n ");
                             
@@ -681,6 +681,8 @@ int main(int argc, const char* argv[])
 
     listeners.finalizeReport();
 
+    printf(" bbk checkpoint END main client END \n ");
+    
     // error range in shell is [0-255]
     return std::min(listeners.error(), 255);
 }

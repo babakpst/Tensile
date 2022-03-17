@@ -37,13 +37,8 @@ class KernelWriterConversion(KernelWriterBase):
     self.language = "HIP"
     self.kernelName = self.getKernelName()
     self.datatype = self.state["ProblemType"]["ComputeDataType"].toDevice(self.language)
-    print(" bbk KernelWriterConversion: before datatype: {}".format(self.datatype))
-    # bbk fix TODO
-    if self.state["ProblemType"]["DataType"].isHalf() and self.state["ProblemType"]["HighPrecisionAccumulate"]:
-      self.datatype = DataType('single').toDevice(self.language)
-      print(" bbk KernelWriterConversion: after datatype: {}".format(self.datatype))
-
-
+    # bbk fixed dlt
+    
     # determine chars for fast access
     self.indexChars = []
     for i in range(0, len(globalParameters["IndexChars"])):

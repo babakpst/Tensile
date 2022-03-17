@@ -703,6 +703,7 @@ namespace Tensile
             m_beta); // Set enum using beta to potentially allow for faster solutions
         consistencyCheck();
         normalize();
+        printf("bbk CTOR of ContractionProblem \n");
     }
 
     size_t ContractionProblem::toAPos(size_t idx) const
