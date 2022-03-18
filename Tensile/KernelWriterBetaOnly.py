@@ -61,7 +61,6 @@ class KernelWriterBetaOnly(KernelWriterBase):
     ptrStr = self.state["ProblemType"]["DestDataType"].toDevice(self.language)
     if self.state["_GlobalAccumulation"]:
       ptrStr = self.state["ProblemType"]["ComputeDataType"].toDevice(self.language)
-      # bbk fixed
    
     isStridedBuffer = self.state["ProblemType"]["StridedBatched"] or self.state["_GlobalAccumulation"]
     ptrStr += "" if isStridedBuffer else "*"

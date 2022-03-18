@@ -508,7 +508,6 @@ namespace Tensile
 
         void setAlphaType(DataType type)
         {
-            printf(" bbk setAlphaType \n");
             m_alphaType = type;
         }
 
@@ -799,7 +798,6 @@ namespace Tensile
         KernelLanguage    m_kernelLanguage          = KernelLanguage::Any;
         PerformanceMetric m_performanceMetric       = PerformanceMetric::DeviceEfficiency;
 
-        // bbk computeDataType
         DataType m_alphaType = DataType::None; // if not assigned, will follow d-type
         DataType m_betaType  = DataType::None; // for bwd-compatible
 

@@ -471,14 +471,9 @@ int main(int argc, const char* argv[])
     using namespace Tensile;
     using namespace Tensile::Client;
 
-    printf(" bbk checkpoint 000 main client starts \n ");
-
     auto args = parse_args(argc, argv);
-    //printf(" bbk checkpoint 100 main client \n ");
 
     ClientProblemFactory problemFactory(args);
-    //printf(" bbk checkpoint 200 main client \n ");
-
 
     auto        hardware = GetHardware(args);
     hipStream_t stream   = GetStream(args);
@@ -486,9 +481,6 @@ int main(int argc, const char* argv[])
     auto                          library = LoadSolutionLibrary(args);
     Tensile::hip::SolutionAdapter adapter;
     LoadCodeObjects(args, adapter);
-
-    //printf(" bbk checkpoint 300 main client \n ");
-
 
     auto problems        = problemFactory.problems();
     int  firstProblemIdx = args["problem-start-idx"].as<int>();
@@ -562,11 +554,8 @@ int main(int argc, const char* argv[])
     {
         listeners.preBenchmarkRun();
 
-        //printf(" bbk checkpoint 001 main client \n ");
-
         for(int problemIdx = firstProblemIdx; problemIdx <= lastProblemIdx; problemIdx++)
         {
-            //printf(" bbk checkpoint 002 \n ");
             auto& problem = problems[problemIdx];
             problem.setWorkspaceSize(dataInit->workspaceSize());
 
@@ -583,7 +572,6 @@ int main(int argc, const char* argv[])
 
             while(solutionIterator->moreSolutionsInProblem())
             {
-                //printf(" bbk checkpoint 003 \n ");
                 auto solution = solutionIterator->getSolution();
 
                 listeners.preSolution(*solution);
@@ -594,19 +582,14 @@ int main(int argc, const char* argv[])
                     {
                         while(listeners.needMoreRunsInSolution())
                         {
-                            //printf(" bbk checkpoint 004 \n ");
                             auto inputs = dataInit->prepareGPUInputs(problem);
 
-                            // bbk: Calling the ContractionSolution
                             auto kernels = solution->solve(problem, *inputs, *hardware);
-                            //printf(" bbk checkpoint 005 after solving \n ");
                             
                             size_t       warmupInvocations = listeners.numWarmupRuns();
                             size_t       eventCount        = gpuTimer ? kernels.size() : 0;
                             TimingEvents warmupStartEvents(warmupInvocations, eventCount);
                             TimingEvents warmupStopEvents(warmupInvocations, eventCount);
-
-                            //printf(" bbk checkpoint 006 bofore warmup: %lu \n ",warmupInvocations);
 
                             for(int i = 0; i < warmupInvocations; i++)
                             {
@@ -621,7 +604,6 @@ int main(int argc, const char* argv[])
                                         adapter.launchKernels(kernels, stream, nullptr, nullptr));
                                 listeners.postWarmup();
                             }
-                            //printf(" bbk checkpoint 006 after warmup \n ");
 
                             listeners.validateWarmups(inputs, warmupStartEvents, warmupStopEvents);
 
@@ -640,7 +622,6 @@ int main(int argc, const char* argv[])
                                 for(int j = 0; j < enq; j++)
                                 {
                                     if(gpuTimer){
-                                        //printf(" bbk checkpoint 007 calling the kernel \n ");
                                     
                                         HIP_CHECK_EXC(adapter.launchKernels(
                                             kernels, stream, startEvents[j], stopEvents[j]));
@@ -680,8 +661,6 @@ int main(int argc, const char* argv[])
     }
 
     listeners.finalizeReport();
-
-    printf(" bbk checkpoint END main client END \n ");
     
     // error range in shell is [0-255]
     return std::min(listeners.error(), 255);

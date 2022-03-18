@@ -310,16 +310,14 @@ validMFMA = {}
 validMFMA["H"] = [[32,32,4,2], [32,32,8,1], [16,16,4,4], [16,16,16,1], [4,4,4,16]]
 validMFMA["S"] = [[32,32,1,2], [32,32,2,1], [16,16,1,4], [16,16,4,1], [4,4,1,16]]
 validMFMA["B"] = [[32,32,2,2], [32,32,4,1], [16,16,2,4], [16,16,8,1], [4,4,2,16]]
-#validMFMA["4xi8"] = [[32,32,4,2], [32,32,8,1], [16,16,4,4], [16,16,16,1], [4,4,4,16]] # bbk dlt why do we need this?
 validMFMA["D"] = [[16,16,4,1], [4,4,4,4]]
 validMFMA["B1k"] = [[32,32,4,2], [32,32,8,1], [16,16,4,4], [16,16,16,1], [4,4,4,16]]
 validMFMA["C"] = validMFMA["S"]
 validMFMA["Z"] = validMFMA["D"]
-#validMFMA["I8"] = validMFMA["4xi8"] # bbk dlt
-validMFMA["I8"] = [[32,32,4,2], [32,32,8,1], [16,16,4,4], [16,16,16,1], [4,4,4,16]] # bbk 
+validMFMA["I8"] = [[32,32,4,2], [32,32,8,1], [16,16,4,4], [16,16,16,1], [4,4,4,16]]
 validTT = 16
 validMFMA["_format9"] = []
-#for MFMA in [validMFMA["H"], validMFMA["S"], validMFMA["B"], validMFMA["4xi8"], validMFMA["D"]]: # bbk
+
 for MFMA in [validMFMA["H"], validMFMA["S"], validMFMA["B"], validMFMA["D"]]:
   for MI in MFMA:
     for bm in range(int(math.log(MI[3],2))+1):
@@ -328,7 +326,6 @@ for MFMA in [validMFMA["H"], validMFMA["S"], validMFMA["B"], validMFMA["D"]]:
           for wave_m in range (3):
             for wave_n in range(3):
               validMFMA["_format9"].append([MI[0],MI[1],MI[2],MI[3],2**bm,tt0,tt1,2**wave_m, 2**wave_n])
-#validMatrixInstructions = [[], [-1]] + validMFMA["H"] + validMFMA["S"] + validMFMA["B"] + validMFMA["4xi8"] + validMFMA["D"] + validMFMA["B1k"] # bbk
 validMatrixInstructions = [[], [-1]] + validMFMA["H"] + validMFMA["S"] + validMFMA["B"] + validMFMA["D"] + validMFMA["B1k"]
 validMatrixInstructions = validMatrixInstructions + validMFMA["_format9"]
 
@@ -358,8 +355,6 @@ validGEMMTypes = [ ('H','H','H'), ('S','S','S'), ('D','D','D'), ('C','C','C'), (
                    ('H','H','S'), ('H','S','S'), \
                    ('B','B','S'), ('B','S','S'), \
                    ('I8','I','I'), ('4xi8','I','I')]
-# bbk:  dlt
-#typesUsingNewNaming = [ ('H','S','S'), ('B','S','S'),('I8','I','I')]  # bbk dlt, I added: ('H','H','S'), ('B','B','S'), ('4xi8','I','I') # bbk dlt
 
 # All HPA types are listed here (HPA=T). The name of the library logic files for these types is:
 # *_TiToTc_BH*.yaml where Ti, Tc, and To are the data types of A/B, C/D, and computation, respectively.

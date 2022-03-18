@@ -37,7 +37,6 @@ class KernelWriterConversion(KernelWriterBase):
     self.language = "HIP"
     self.kernelName = self.getKernelName()
     self.datatype = self.state["ProblemType"]["ComputeDataType"].toDevice(self.language)
-    # bbk fixed dlt
     
     # determine chars for fast access
     self.indexChars = []

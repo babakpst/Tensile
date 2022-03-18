@@ -842,7 +842,6 @@ class KernelWriterSource(KernelWriter):
     ptrStr = kernel["ProblemType"]["DestDataType"].toDevice(self.language)
     if kernel["_GlobalAccumulation"]:
       ptrStr = kernel["ProblemType"]["ComputeDataType"].toDevice(self.language)
-      # bbk fixed dlt
 
     isStridedBuffer = kernel["ProblemType"]["StridedBatched"] or kernel["_GlobalAccumulation"]
     ptrStr  += ("" if isStridedBuffer else "*")
