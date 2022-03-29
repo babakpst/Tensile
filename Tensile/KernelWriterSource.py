@@ -34,6 +34,8 @@ class KernelWriterSource(KernelWriter):
   # Make OpenCL Kernel String
   ##############################################################################
   def __init__( self, kernelMinNaming, kernelSerialNaming ):
+    print("bbk KernelWriterSource checkpoint 000")
+    
     super(KernelWriterSource, self).__init__( \
         kernelMinNaming, kernelSerialNaming)
     self.language = globalParameters["RuntimeLanguage"]
@@ -797,6 +799,7 @@ class KernelWriterSource(KernelWriter):
   # Function Signature Prefix
   ##############################################################################
   def functionSignaturePrefix(self, kernel):
+    print("bbk KernelWriterSource checkpoint 001")
     s = ""
     if self.language == "HIP":
       s += "#pragma clang diagnostic push" + self.endLine
@@ -810,6 +813,8 @@ class KernelWriterSource(KernelWriter):
   def functionSignature(self, kernel ):
     kernelName = self.getKernelName(kernel)
     problemType = kernel["ProblemType"]
+
+    print("bbk KernelWriterSource checkpoint 002")
 
     # determine chars for fast access
     self.indexChars = []
@@ -857,6 +862,10 @@ class KernelWriterSource(KernelWriter):
     s += "  " + globalStr + ptrStr + " const * " + batchStr + "A,"
     s += self.endLine
     s += "  " + globalStr + ptrStr + " const * " + batchStr + "B"
+
+    #bbk, should be here.
+    print("bbk: KernelWriterSource: %s" %  kernel["ProblemType"]["ComputeDataType"].toDevice(self.language))
+
 
     # alpha & beta
     s += "," + self.endLine + "  " \

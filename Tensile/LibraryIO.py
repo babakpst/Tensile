@@ -218,6 +218,8 @@ def createLibraryLogic(schedulePrefix, architectureName, deviceNames, logicTuple
     exactLogic    = logicTuple[3]
     rangeLogic    = logicTuple[4]
 
+    print("bbk: librarylogic checkpoint 004")
+
     tileSelection = False
     if len(logicTuple) > 5 and logicTuple[5]:
         tileSelection = True
@@ -239,9 +241,13 @@ def createLibraryLogic(schedulePrefix, architectureName, deviceNames, logicTuple
     problemTypeState["ComputeDataType"] = \
             problemTypeState["ComputeDataType"].value
     data.append(problemTypeState)
+
+    print("bbk: liblogic: {}".format(problemTypeState["ComputeDataType"]))
+
     # solutions
     solutionList = []
     for solution in solutions:
+        print("bbk: librarylogic checkpoint 005")
         solutionState = solution.getAttributes()
         solutionState["ProblemType"] = solutionState["ProblemType"].state
         solutionState["ProblemType"]["DataType"] = \
@@ -253,6 +259,7 @@ def createLibraryLogic(schedulePrefix, architectureName, deviceNames, logicTuple
         solutionList.append(solutionState)
 
     if tileSelection:
+        print("bbk: librarylogic checkpoint 006")
         tileSolutions = logicTuple[5]
         for solution in tileSolutions:
             solutionState = solution.getAttributes()

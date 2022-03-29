@@ -69,6 +69,7 @@ class ClientLogLevel(Enum):
 # Main
 ################################################################################
 def main( config ):
+  print("bbk: librarylogic checkpoint 002")
   libraryLogicPath = os.path.join(globalParameters["WorkingPath"], \
       globalParameters["LibraryLogicPath"])
   stepBaseDir = pushWorkingPath(globalParameters["LibraryClientPath"])

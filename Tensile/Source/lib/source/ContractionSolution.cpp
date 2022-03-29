@@ -813,6 +813,8 @@ namespace Tensile
                                                                   TypedInputs const& inputs,
                                                                   Hardware const&    hardware) const
     {
+        
+        std::cout << "bbk: ContractionSolution.cpp solveTyped checkpoint 004 " << std::endl;
         bool debug = Debug::Instance().printKernelArguments() || this->kernelArgsLog;
         // Check for nullptrs if alpha is non-zero.
         if((inputs.alpha != static_cast<typename TypedInputs::AlphaType>(0) /*&& k!=0*/)
@@ -830,6 +832,8 @@ namespace Tensile
         if(problem.alphaRestriction() != ScalarValue::Any
            && problem.alphaRestriction() != toScalarValueEnum(inputs.alpha))
         {
+            std::cout << "bbk: ContractionSolution.cpp solveTyped checkpoint 005: should not be here " << std::endl;
+
             std::stringstream inputValue;
             inputValue << inputs.alpha;
             std::string msg = std::string("Alpha value ") + inputValue.str()
@@ -869,6 +873,8 @@ namespace Tensile
         else
             rv.push_back(generateSingleCall<TypedInputs, false>(problem, inputs, hardware));
 
+        std::cout << "bbk: ContractionSolution.cpp solveTyped checkpoint 006: " << std::endl;
+        
         if(sizeMapping.globalAccumulation)
         {
             if(debug)
@@ -887,12 +893,16 @@ namespace Tensile
                                    ContractionSolution::Inputs const&  inputs,
                                    Hardware const&                     hardware) const
     {
+        std::cout << "bbk checkpoint 000 ContractionSolution.cpp " << this->KernelName() << std::endl;
+
         if(Debug::Instance().printWinningKernelName())
             std::cout << "Running kernel: " << this->KernelName() << std::endl;
 
         // retreive alpha/beta type set via setAlpha/BetaType()
         auto alphaType = problem.alphaType();
         auto betaType  = problem.betaType();
+        std::cout << "bbk checkpoint 002 ContractionSolution.cpp alphaType: " << alphaType << std::endl;
+
 
         // TODO: Some gtests are passing the "problem" without actually defining the
         // alpha/beta type (alphaType and betaType remain None).
@@ -900,14 +910,18 @@ namespace Tensile
         // alpha/beta data types.
         if(alphaType == DataType::None)
         {
-            alphaType
-                = problemType.aType == DataType::BFloat16 ? DataType::Float : problemType.dType;
+            std::cout << "bbk checkpoint 001 ContractionSolution.cpp are we getting here? " <<  std::endl;
+            alphaType = problemType.aType == DataType::BFloat16 ? DataType::Float : problemType.dType; // bbk original
+            //alphaType = (problemType.aType == DataType::BFloat16 || problemType.aType == DataType::Half) ? DataType::Float : problemType.dType; // bbk original
         }
         if(betaType == DataType::None)
         {
             betaType = alphaType;
         }
 
+
+        std::cout << "bbk checkpoint 004 ContractionSolution.cpp: " << problemType.aType << " " << problemType.bType << " " << problemType.cType << " " << 
+                                                                       problemType.dType << " " << alphaType  << " " << betaType << " " << std::endl;
         auto contractionInputsTypeId = ContractionInputs::TypeId(problemType.aType,
                                                                  problemType.bType,
                                                                  problemType.cType,
@@ -915,6 +929,10 @@ namespace Tensile
                                                                  alphaType,
                                                                  betaType);
 
+        std::cout << "bbk checkpoint 005 ContractionSolution.cpp: " << contractionInputsTypeId << 
+                    " ContractionInputs_H_H_H: " << ContractionInputs_H_H_H::TypeId() <<
+                    " ContractionInputs_H_H_S: " << ContractionInputs_H_H_S::TypeId() << "\n";
+        
         switch(contractionInputsTypeId)
         {
         case ContractionInputs_S_S_S::TypeId():
@@ -940,16 +958,19 @@ namespace Tensile
 #ifdef TENSILE_USE_HALF
         case ContractionInputs_H_H_H::TypeId():
         {
+            std::cout << "bbk: ContractionSolution.cpp checkpoint 002: we should NOT be here." << std::endl;
             auto const& typedInputs = dynamic_cast<ContractionInputs_H_H_H const&>(inputs);
             return solveTyped(problem, typedInputs, hardware);
         }
         case ContractionInputs_H_H_S::TypeId():
         {
+            std::cout << "bbk: ContractionSolution.cpp checkpoint 001: we should be here." << std::endl;
             auto const& typedInputs = dynamic_cast<ContractionInputs_H_H_S const&>(inputs);
             return solveTyped(problem, typedInputs, hardware);
         }
         case ContractionInputs_H_S_S::TypeId():
         {
+            std::cout << "bbk: ContractionSolution.cpp checkpoint 003: we should NOT be here." << std::endl;
             auto const& typedInputs = dynamic_cast<ContractionInputs_H_S_S const&>(inputs);
             return solveTyped(problem, typedInputs, hardware);
         }

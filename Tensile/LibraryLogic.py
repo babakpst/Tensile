@@ -1437,6 +1437,7 @@ def generateLogic(config, benchmarkDataPath, libraryLogicPath):
         printExit("%s doesn't exist for %s" % (dataFileName, fileBase) )
       if not os.path.exists(solutionsFileName):
         printExit("%s doesn't exist for %s" % (solutionsFileName, fileBase) )
+      print("bbk: solution file name {}".format(solutionsFileName))
       (problemSizes, solutions) = LibraryIO.parseSolutionsFile(solutionsFileName)
       if len(solutions) == 0:
         printExit("%s doesn't contains any solutions." % (solutionsFileName) )
@@ -1452,6 +1453,8 @@ def generateLogic(config, benchmarkDataPath, libraryLogicPath):
     filename = os.path.join(globalParameters["WorkingPath"], \
         "{}_{}".format(analysisParameters["ScheduleName"], str(problemType) + ".yaml"))
 
+    #bbk writing Library Logic
+    print("bbk: librarylogic checkpoint 003")
     print2("# writing library logic YAML {}".format(filename))
     data = LibraryIO.createLibraryLogic(analysisParameters["ScheduleName"], \
         analysisParameters["ArchitectureName"], analysisParameters["DeviceNames"], logicTuple)
@@ -1473,6 +1476,7 @@ def generateLogic(config, benchmarkDataPath, libraryLogicPath):
 ################################################################################
 def main(  config ):
 
+  print("bbk: librarylogic checkpoint 001")
   benchmarkDataPath = os.path.join(globalParameters["WorkingPath"], \
       globalParameters["BenchmarkDataPath"])
 
