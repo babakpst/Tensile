@@ -69,6 +69,8 @@ namespace Tensile
                                                              double*          fitness
                                                              = nullptr) const override
         {
+            
+            printf(" bbk findBestSolution in MatchingLibrary \n");
             bool useDebugSelection = Debug::Instance().enableDebugSelection();
 
             typename Table::Transform transform

@@ -408,8 +408,10 @@ namespace Tensile
                 m_cMaxElements = RoundUpToMultiple<unsigned int>(m_cMaxElements, cRoundUpSize);
                 m_dMaxElements = RoundUpToMultiple<unsigned int>(m_dMaxElements, dRoundUpSize);
             }
+            
             m_problemDependentData = IsProblemDependent(m_aInit) || IsProblemDependent(m_bInit)
                                      || IsProblemDependent(m_cInit) || IsProblemDependent(m_dInit);
+            printf(" bbk m_aInit %d - %d \n", m_aInit, m_problemDependentData);
         }
 
         DataInitialization::~DataInitialization() {}

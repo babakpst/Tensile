@@ -471,6 +471,8 @@ int main(int argc, const char* argv[])
     using namespace Tensile;
     using namespace Tensile::Client;
 
+    printf(" bbk library logic \n");
+
     auto args = parse_args(argc, argv);
 
     ClientProblemFactory problemFactory(args);

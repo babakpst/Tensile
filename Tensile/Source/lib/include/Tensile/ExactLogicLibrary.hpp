@@ -71,6 +71,8 @@ namespace Tensile
                                                              double*          fitness
                                                              = nullptr) const override
         {
+            
+            printf(" bbk findBestSolution in ExactLogicLibrary \n");
             std::shared_ptr<MySolution> rv;
 
             for(auto const& row : rows)

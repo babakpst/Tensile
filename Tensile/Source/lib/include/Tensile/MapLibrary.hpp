@@ -109,6 +109,7 @@ namespace Tensile
                                                              double*          fitness
                                                              = nullptr) const override
         {
+            printf(" bbk findBestSolution in MapLibrary \n");
             auto library = lookup(problem, hardware);
 
             if(library == nullptr)

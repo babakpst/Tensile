@@ -80,6 +80,8 @@ namespace Tensile
                                                              double*          fitness
                                                              = nullptr) const override
         {
+            
+            printf(" bbk findBestSolution in GranularitySelectionLibrary \n");
             const bool debug = Debug::Instance().printPropertyEvaluation();
 
             std::vector<size_t> key;

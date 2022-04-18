@@ -79,12 +79,15 @@ namespace Tensile
 
         MasterSolutionLibrary() = default;
 
+        // bbk findBestSolution
         virtual std::shared_ptr<MySolution> findBestSolution(MyProblem const& problem,
                                                              Hardware const&  hardware,
                                                              double*          fitness
                                                              = nullptr) const override
         {
             const int solution_index = Debug::Instance().getSolutionIndex();
+            
+            printf(" bbk MasterSolutionLibrary \n");
 
             if(solution_index >= 0)
             {

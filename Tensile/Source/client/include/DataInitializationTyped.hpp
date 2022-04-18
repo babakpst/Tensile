@@ -308,6 +308,7 @@ namespace Tensile
                         m_gpuInputsPristine = createNewGPUInputs(problem);
 
                     pristine = m_gpuInputsPristine;
+                    printf(" bbk pristine 1 \n");
 
                     if(m_curBoundsCheck == BoundsCheckMode::NaN)
                     {
@@ -323,6 +324,7 @@ namespace Tensile
                         m_cpuInputsPristine = createNewCPUInputs(problem);
 
                     pristine = m_cpuInputsPristine;
+                    printf(" bbk pristine 2 \n");
 
                     if(m_curBoundsCheck == BoundsCheckMode::NaN)
                     {
@@ -341,6 +343,7 @@ namespace Tensile
                 }
                 else
                 {
+                    printf(" bbk are we here? calling NewGPUInputs %d \n", !pristine);
                     if(!m_gpuInputs)
                         m_gpuInputs = allocNewGPUInputs(pristine);
 
@@ -365,6 +368,8 @@ namespace Tensile
 
             std::shared_ptr<ManagedInputs> createNewGPUInputs(ContractionProblem const& problem)
             {
+                printf(" bbk calling NEWGPUINPUT 1 \n");
+                
                 auto rv = allocNewGPUInputs();
                 if(!m_cpuInputsPristine)
                     m_cpuInputsPristine = createNewCPUInputs(problem);
@@ -486,8 +491,14 @@ namespace Tensile
             std::shared_ptr<ManagedInputs> allocNewGPUInputs(std::shared_ptr<ManagedInputs> pristine
                                                              = nullptr)
             {
-                if(m_curBoundsCheck != BoundsCheckMode::Disable || (pristine && !pristine->gpu))
+                printf(" bbk inside the allocNewGPUInputs-  %d -gpu %d\n", !pristine, pristine->gpu);
+                printf(" bbk conditions  %d -  %d\n", m_curBoundsCheck != BoundsCheckMode::Disable , (pristine && !pristine->gpu));
+                
+                if(m_curBoundsCheck != BoundsCheckMode::Disable || (pristine && !pristine->gpu)){
                     pristine = nullptr;
+                printf(" bbk inside the allocNewGPUInputs-  %d \n", !pristine);
+                }
+
 
                 std::shared_ptr<AType> a;
                 std::shared_ptr<BType> b;
@@ -586,10 +597,12 @@ namespace Tensile
 
                 if(pristine)
                 {
+                    printf(" bbk required workspace allocation \n");
                     ws = pristine->managedWS;
                 }
                 else
                 {
+                    printf(" bbk full workspace allocation \n");
                     ws = allocNewGPUBuffer<void>("ws", m_workspaceSize);
                 }
 

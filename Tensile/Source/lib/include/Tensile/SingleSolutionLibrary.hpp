@@ -77,6 +77,8 @@ namespace Tensile
                                                              double*          fitness
                                                              = nullptr) const override
         {
+            
+            printf(" bbk findBestSolution in SingleSolutionLibrary \n");
             bool debug = Debug::Instance().printPredicateEvaluation();
 
             if(solution)

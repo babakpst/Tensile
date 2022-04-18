@@ -170,6 +170,8 @@ namespace Tensile
                                                              double*          fitness
                                                              = nullptr) const override
         {
+  
+            printf(" bbk findBestSolution in CatchingLibrary \n");
             try
             {
                 double cachedFitness = std::numeric_limits<double>::max();
