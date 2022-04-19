@@ -160,6 +160,7 @@ namespace Tensile
             virtual std::tuple<ReturnValue, double>
                 findBestMatch(Object const& object, Transform transform) const override
             {
+                printf(" bbk findBestMatch \n");
                 return findBestKeyMatch(keyForProblem(object), transform);
             }
 
@@ -351,6 +352,7 @@ namespace Tensile
                 const bool debug = Debug::Instance().printPropertyEvaluation();
                 const bool naive = Debug::Instance().naivePropertySearch();
 
+                printf(" bbk findBestKeyMatch \n");
                 if(naive)
                 {
                     if(debug)
@@ -371,6 +373,8 @@ namespace Tensile
             std::tuple<ReturnValue, double> findBestKeyMatch_BinSearch(Key const& key,
                                                                        Transform  transform) const
             {
+                
+                printf(" bbk findBestKeyMatch_BinSearch\n");
                 if(this->table.empty())
                     return std::make_tuple(this->nullValue, std::numeric_limits<double>::max());
 

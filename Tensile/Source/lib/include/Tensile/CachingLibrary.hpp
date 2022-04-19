@@ -176,14 +176,18 @@ namespace Tensile
             {
                 double cachedFitness = std::numeric_limits<double>::max();
                 fitness              = (fitness) ? fitness : &cachedFitness;
-
+                printf(" bbk cachedFitness: %f, fitness: %d \n", cachedFitness, *fitness);
+                
                 auto const&                 amdgpu = dynamic_cast<AMDGPU const&>(hardware);
                 std::shared_ptr<MySolution> solution;
                 std::tie(solution, *fitness) = m_cache.find(problem, amdgpu);
 
-                if(solution)
+                if(solution){
+                    printf(" bbk found in cache ");
                     return solution;
+                    }
 
+                // bbk calling ExactLogicLibrary
                 solution = m_subLibrary->findBestSolution(problem, hardware, fitness);
                 if(solution)
                     m_cache.add(std::make_tuple(solution, *fitness), problem, amdgpu);

@@ -77,6 +77,7 @@ namespace Tensile
 
             for(auto const& row : rows)
             {
+                printf(" bbk in ExactLogic: %u \n",(row.first(problem, hardware)));
                 if(row.first(problem, hardware))
                 {
                     rv = row.second->findBestSolution(problem, hardware, fitness);

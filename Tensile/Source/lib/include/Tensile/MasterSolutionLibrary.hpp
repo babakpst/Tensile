@@ -87,7 +87,11 @@ namespace Tensile
         {
             const int solution_index = Debug::Instance().getSolutionIndex();
             
-            printf(" bbk MasterSolutionLibrary \n");
+            printf(" bbk findBestSolution in MasterSolutionLibrary \n");
+            if (fitness)
+              printf(" bbk fitness is not null \n");
+            else
+              printf(" bbk fitness is NULL \n");
 
             if(solution_index >= 0)
             {

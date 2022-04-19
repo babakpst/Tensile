@@ -78,18 +78,25 @@ namespace Tensile
                 return library->findBestSolution(problem, hardware);
             };
 
+            
+            printf(" bbk findBestSolution in MatchingLibrary 2\n");
             if(useDebugSelection)
             {
+                
+                printf(" bbk findBestSolution in MatchingLibrary 3\n");
                 std::shared_ptr<MySolution> evaluationSolution
                     = table->findBestEvaluationSolution(problem, hardware, transform);
                 return evaluationSolution;
             }
             else
             {
+                printf(" bbk findBestSolution in MatchingLibrary 4\n");
                 double localFitness = std::numeric_limits<double>::max();
                 fitness             = (fitness) ? fitness : &localFitness;
                 std::shared_ptr<MySolution> solution;
+                printf(" bbk findBestSolution in MatchingLibrary 5\n");
                 std::tie(solution, *fitness) = table->findBestMatch(problem, transform);
+                printf(" bbk findBestSolution in MatchingLibrary 5\n");
                 return solution;
             }
         }
