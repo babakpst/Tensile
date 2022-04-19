@@ -75,14 +75,17 @@ namespace Tensile
             printf(" bbk findBestSolution in ExactLogicLibrary \n");
             std::shared_ptr<MySolution> rv;
 
+            int counter = 0;
             for(auto const& row : rows)
             {
-                printf(" bbk in ExactLogic: %u \n",(row.first(problem, hardware)));
+                printf(" bbk in ExactLogic: %u , counter = %u \n",(row.first(problem, hardware)), counter);
                 if(row.first(problem, hardware))
                 {
+                    // bbk calls the MapLibrary
                     rv = row.second->findBestSolution(problem, hardware, fitness);
-                    if(rv)
-                        return rv;
+                    if(rv){
+                        printf(" bbk I am returning now. \n");
+                        return rv;}
                 }
             }
 

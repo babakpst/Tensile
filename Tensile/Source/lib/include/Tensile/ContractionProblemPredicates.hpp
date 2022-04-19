@@ -1194,7 +1194,7 @@ namespace Tensile
                 {
                     bool rv = (*this)(problem);
 
-                    stream << *this << ": (" << problem.d().totalLogicalElements() << " * " << value
+                    stream << "  bbk WorksapceCheck "<< *this << ": (" << problem.d().totalLogicalElements() << " * " << value
                            << " <= " << problem.workspaceSize() << ") == " << rv;
 
                     return rv;

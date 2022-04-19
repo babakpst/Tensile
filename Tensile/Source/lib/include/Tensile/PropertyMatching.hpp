@@ -422,6 +422,7 @@ namespace Tensile
                     if(myDistance < bestDistance
                        || (myDistance == bestDistance && iter->speed > bestSpeed))
                     {
+                        printf(" bbk calling transform \n");
                         auto myMatch = transform(iter->value);
 
                         if(myMatch)
