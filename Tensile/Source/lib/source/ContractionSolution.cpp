@@ -861,6 +861,8 @@ namespace Tensile
 
         std::vector<KernelInvocation> rv;
 
+        std::cout << "  bbk sizeMapping.globalSplitU: (0: no GSU, 1: singlebuffer, 2: multiplebuffer) " << sizeMapping.globalSplitU << std::endl;
+        
         if(sizeMapping.globalSplitU > 1 && sizeMapping.globalAccumulation != 2)
         {
             if(debug)
@@ -892,6 +894,8 @@ namespace Tensile
                                    ContractionSolution::Inputs const&  inputs,
                                    Hardware const&                     hardware) const
     {
+        
+        std::cout << "  bbk in the solve " << std::endl;
         if(Debug::Instance().printWinningKernelName())
             std::cout << "Running kernel: " << this->KernelName() << std::endl;
 

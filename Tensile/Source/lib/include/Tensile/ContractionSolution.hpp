@@ -166,7 +166,7 @@ namespace Tensile
         /**
    * Calculate required workspace size.
    */
-        size_t requiredWorkspaceSize(Problem const& problem) const;
+        size_t requiredWorkspaceSize(Problem const& problem) const; // bbk check this out
 
         Granularities computeGranularities(
             Hardware const& hardware, double M, double N, double K, double NumBatches) const;

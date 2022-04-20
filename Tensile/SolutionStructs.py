@@ -2908,6 +2908,8 @@ class Solution(collections.abc.Mapping):
             (state["ProblemType"]["DataType"].isHalf() and not state["ProblemType"]["HighPrecisionAccumulate"]) or
             (state["_GlobalAccumulation"])
         )
+      
+      print("bbk _globalaccumulate: {}".format(state["_GlobalAccumulation"]))
       if not supported:
         reject(state, "GlobalSplitU only compatible with single or asm and (half or mixed) precision")
         return
