@@ -861,7 +861,7 @@ namespace Tensile
 
         std::vector<KernelInvocation> rv;
 
-        std::cout << "  bbk sizeMapping.globalSplitU: (0: no GSU, 1: singlebuffer, 2: multiplebuffer) " << sizeMapping.globalSplitU << std::endl;
+        std::cout << "  bbk sizeMapping.globalAccumulation: (0: no GSU, 1: singlebuffer, 2: multiplebuffer) " << sizeMapping.globalAccumulation << std::endl;
         
         if(sizeMapping.globalSplitU > 1 && sizeMapping.globalAccumulation != 2)
         {
