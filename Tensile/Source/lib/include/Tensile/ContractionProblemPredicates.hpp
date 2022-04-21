@@ -1186,8 +1186,8 @@ namespace Tensile
 
                 virtual bool operator()(ContractionProblem const& problem) const override
                 {
-                    //return problem.d().totalLogicalElements() * value <= problem.workspaceSize();  // bbk uncomment
-                    return 1==1; // test true.
+                    return problem.d().totalLogicalElements() * value <= problem.workspaceSize();  // bbk uncomment
+                    //return 1==1; // test true.
                 }
 
                 virtual bool debugEval(ContractionProblem const& problem,
