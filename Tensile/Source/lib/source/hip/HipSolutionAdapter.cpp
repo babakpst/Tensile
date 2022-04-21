@@ -266,6 +266,8 @@ namespace Tensile
                                                   hipEvent_t                           startEvent,
                                                   hipEvent_t                           stopEvent)
         {
+            
+            std::cout << " bbk launch kernel 1 \n";
             auto first = kernels.begin();
             auto last  = kernels.end() - 1;
 
@@ -289,6 +291,8 @@ namespace Tensile
                                                   std::vector<hipEvent_t> const&       startEvents,
                                                   std::vector<hipEvent_t> const&       stopEvents)
         {
+            
+            std::cout << " bbk launch kernel 2 \n";
             if(kernels.size() != startEvents.size() || kernels.size() != stopEvents.size())
                 throw std::runtime_error(concatenate("Must have an equal number of kernels (",
                                                      kernels.size(),
