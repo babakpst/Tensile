@@ -194,6 +194,7 @@ class KernelWriterBetaOnly(KernelWriterBase):
 
     # apply offset
     kStr += self.endLine
+    #kStr += "  //bbk 1" + self.endLine
     if not self.state["_GlobalAccumulation"]:
       kStr += "  D = D + offsetD;" + self.endLine
     kStr += "  C = C + offsetC;" + self.endLine

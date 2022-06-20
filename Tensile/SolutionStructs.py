@@ -1745,7 +1745,9 @@ class Solution(collections.abc.Mapping):
     if self["ProblemType"].convolution:
         for (key,value) in self["ProblemType"].convolution.solutionParms.items():
             self._state[key]=value
+    
     Solution.assignDerivedParameters(self._state)
+    
     self._name = config["CustomKernelName"] if isCustomKernelConfig(config) else None
     self.initHelperKernelObjects()
 
@@ -2475,15 +2477,15 @@ class Solution(collections.abc.Mapping):
 
     if (state["LdsBlockSizePerPad%c"%tc] == 0) \
         and (state["LdsPad%c"%tc] != 0):
-#        and ((state["LSC%c"%tc] * numBytes) != (state["NumThreads"] * 4)): // TODO:
-#        and ((state["LSC%c"%tc] * numBytes) % (state["WavefrontSize"] * 4) != 0):
+ #       and ((state["LSC%c"%tc] * numBytes) != (state["NumThreads"] * 4)): // TODO:
+ #       and ((state["LSC%c"%tc] * numBytes) % (state["WavefrontSize"] * 4) != 0):
       reject(state, "can't use DirectToLds for LdsBlockSizePerPad%c == 0 and LdsPad%c != 0"%(tc, tc))
       return False
 
     if (state["LdsBlockSizePerPad%c"%tc] != 0) \
         and (state["LdsPad%c"%tc] != 0) \
         and (state["LdsBlockSizePerPad%c"%tc] != state["WavefrontSize"] * state["GlobalLoadVectorWidth%c"%tc] * numBytes):
-#        and (state["LdsBlockSizePerPad%tc"] % (state["WavefrontSize"] * 4) != 0): // TODO:
+ #       and (state["LdsBlockSizePerPad%tc"] % (state["WavefrontSize"] * 4) != 0): // TODO:
       reject(state, "can't use DirectToLds for LdsBlockSizePerPad%c != 0 and LdsPad%c != 0 and \
               LdsBlockSizePerPad%c != WavefrontSize * GlobalLoadVectorWidth%c * bpe"%(tc, tc, tc, tc))
       return False
@@ -2575,24 +2577,6 @@ class Solution(collections.abc.Mapping):
     for s in Solution.InternalKeys:
         state['_'+s] = state[s]
         #del state[s]
-
-    if ("_GlobalAccumulation" not in state) or ("_WorkspaceSizePerElemC" not in state):
-      state["_GlobalAccumulation"] = None
-      state["_WorkspaceSizePerElemC"] = 0
-      if state["GlobalSplitU"] > 1:
-        computeName  = state["ProblemType"]["ComputeDataType"].toName()
-        computeBytes = state["ProblemType"]["ComputeDataType"].numBytes()
-
-        if state["GlobalSplitUAlgorithm"] == 'SingleBuffer':
-          if computeName != state["ProblemType"]["DestDataType"].toName():
-            state["_GlobalAccumulation"] = 'SingleBuffer'
-        elif state["GlobalSplitUAlgorithm"] == 'MultipleBuffer':
-          state["_GlobalAccumulation"] = 'MultipleBuffer'
-
-        if state["_GlobalAccumulation"] == 'SingleBuffer':
-          state["_WorkspaceSizePerElemC"] = computeBytes
-        elif state["_GlobalAccumulation"] == 'MultipleBuffer':
-          state["_WorkspaceSizePerElemC"] = computeBytes * state["GlobalSplitU"]
 
     if state["VectorStore"] == -1:
         state["_VectorStore"] = 1 # default, may be changed if needed to generate a valid kernel
@@ -2958,23 +2942,70 @@ class Solution(collections.abc.Mapping):
         reject(state, "int8 doesn't support LocalSplitU")
         return
 
+    # bbk  ===============================================
+    if ("_GlobalAccumulation" not in state) or ("_WorkspaceSizePerElemC" not in state):
+      state["_GlobalAccumulation"] = None
+      state["_WorkspaceSizePerElemC"] = 0
+
+      if state["GlobalSplitU"] > 1:  # bbk  merge this condition with supported condition
+        computeName  = state["ProblemType"]["ComputeDataType"].toName()  # bbk remove
+        computeBytes = state["ProblemType"]["ComputeDataType"].numBytes()
+
+        if state["GlobalSplitUAlgorithm"] == 'SingleBuffer':
+          #if computeName != state["ProblemType"]["DestDataType"].toName(): # bbk removed this. 
+          print()
+          if computeName != state["ProblemType"]["DataType"].toName(): # bbk this says that HPA+singlebuffer requires workspace, but non-HPA doesn't. 
+            state["_GlobalAccumulation"] = 'SingleBuffer'   # bbk uncommnet
+            state["_WorkspaceSizePerElemC"] = computeBytes # bbk remove the comment
+        elif state["GlobalSplitUAlgorithm"] == 'MultipleBuffer':
+          state["_GlobalAccumulation"] = 'MultipleBuffer'
+          state["_WorkspaceSizePerElemC"] = computeBytes * state["GlobalSplitU"]
+
+        #if state["_GlobalAccumulation"] == 'SingleBuffer':
+        #  state["_WorkspaceSizePerElemC"] = computeBytes
+        #elif state["_GlobalAccumulation"] == 'MultipleBuffer':
+        #  state["_WorkspaceSizePerElemC"] = computeBytes * state["GlobalSplitU"]
+
+        if not state["GlobalSplitUSummationAssignmentRoundRobin"] and state["LoopTail"]: # bbk check thik
+          reject(state, "GlobalSplitU and LoopTail require SummationAssignmentRoundRobin=True since strongly breaks Tensile kernel architecture")
+          return
+        # added GSU support for DGEMM   # bbk remove
+        supported = \
+          (state["ProblemType"]["DataType"].isSingle()) or \
+          (state["ProblemType"]["DataType"].isDouble() and state["BufferStore"]) or \
+          (state["ProblemType"]["DestDataType"].isInt32()) or \
+          (state["KernelLanguage"] == "Assembly" and  # bbk check if we need these conditions. 
+              (state["ProblemType"]["DataType"].isHalf() and not state["ProblemType"]["HighPrecisionAccumulate"]) or # hgemm
+              (state["_GlobalAccumulation"])
+          )
+        if not supported:  # bbk uncomment
+          reject(state, "GlobalSplitU only compatible with single or asm and (half or mixed) precision")          
+          return
+
+    # to eliminate identical kernels when GSU=1 but GlobalSplitUAlgorithm is defined as SingleBuffer and MultipleBuffer # bbk
+    if state["GlobalSplitU"] == 1 and state["GlobalSplitUAlgorithm"] == 'MultipleBuffer':  # bbk  merge this condition with supported condition
+      print2(" GlobalSplitU=1 and GlobalSplitUAlgorithm='MultipleBuffer'. Setting GlobalSplitUAlgorithm='SingleBuffer' to avoid duplicate kernels.")
+      state["GlobalSplitUAlgorithm"] = 'SingleBuffer' # bbk uncomment
+
     # GlobalSplitU doesn't work with some other things:
-    if state["GlobalSplitU"] > 1:
-      if not state["GlobalSplitUSummationAssignmentRoundRobin"] and state["LoopTail"]:
-        reject(state, "GlobalSplitU and LoopTail require SummationAssignmentRoundRobin=True since strongly breaks Tensile kernel architecture")
-        return
-      # added GSU support for DGEMM
-      supported = \
-        (state["ProblemType"]["DataType"].isSingle()) or \
-        (state["ProblemType"]["DataType"].isDouble() and state["BufferStore"]) or \
-        (state["ProblemType"]["DestDataType"].isInt32()) or \
-        (state["KernelLanguage"] == "Assembly" and
-            (state["ProblemType"]["DataType"].isHalf() and not state["ProblemType"]["HighPrecisionAccumulate"]) or
-            (state["_GlobalAccumulation"])
-        )
-      if not supported:
-        reject(state, "GlobalSplitU only compatible with single or asm and (half or mixed) precision")
-        return
+    # if state["GlobalSplitU"] > 1:
+    #   if not state["GlobalSplitUSummationAssignmentRoundRobin"] and state["LoopTail"]: # bbk check thik
+    #     reject(state, "GlobalSplitU and LoopTail require SummationAssignmentRoundRobin=True since strongly breaks Tensile kernel architecture")
+    #     return
+    #   # added GSU support for DGEMM   # bbk remove
+    #   supported = \
+    #     (state["ProblemType"]["DataType"].isSingle()) or \
+    #     (state["ProblemType"]["DataType"].isDouble() and state["BufferStore"]) or \
+    #     (state["ProblemType"]["DestDataType"].isInt32()) or \
+    #     (state["KernelLanguage"] == "Assembly" and  # bbk check if we need these conditions. 
+    #         (state["ProblemType"]["DataType"].isHalf() and not state["ProblemType"]["HighPrecisionAccumulate"]) or # hgemm
+    #         (state["_GlobalAccumulation"])
+    #     )
+    #   if not supported:
+    #     reject(state, "GlobalSplitU only compatible with single or asm and (half or mixed) precision")
+    #     return
+
+    # bbk  ===============================================
 
     if state["VectorAtomicWidth"] == -1:
       state["VectorAtomicWidth"] = 1 # TODO - remove this and next line when VAW works for other types

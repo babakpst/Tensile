@@ -636,6 +636,8 @@ int main(int argc, const char* argv[])
             // "b: " << problem.b() << std::endl; std::cout << "c: " << problem.c() <<
             // std::endl; std::cout << "d: " << problem.d() << std::endl;
 
+            //std::cout << " bbk before the listener \n";
+            
             listeners.preProblem(problem);
 
             while(solutionIterator->moreSolutionsInProblem())
@@ -663,10 +665,15 @@ int main(int argc, const char* argv[])
                             {
                                 listeners.preWarmup();
                                 if(gpuTimer)
+                                    {
+                                    //std::cout << " bbk before calling the kernel \n";
                                     HIP_CHECK_EXC(adapter.launchKernels(kernels,
                                                                         stream,
                                                                         warmupStartEvents[i],
                                                                         warmupStopEvents[i]));
+                                    //std::cout << " bbk after calling the kernel \n";
+                                    }
+
                                 else
                                     HIP_CHECK_EXC(
                                         adapter.launchKernels(kernels, stream, nullptr, nullptr));

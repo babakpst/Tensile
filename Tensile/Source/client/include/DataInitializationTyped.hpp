@@ -590,7 +590,9 @@ namespace Tensile
                 }
                 else
                 {
+                    //std::cout << " bbk before allocNewGPUBuffer: " << m_workspaceSize << std::endl;
                     ws = allocNewGPUBuffer<void>("ws", m_workspaceSize);
+                    //std::cout << " bbk after allocNewGPUBuffer: " << m_workspaceSize << std::endl;
                 }
 
                 auto alpha = static_cast<AlphaType>(0);

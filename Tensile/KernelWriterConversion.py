@@ -202,6 +202,7 @@ class KernelWriterConversion(KernelWriterBase):
     ########################################
     # apply offset
     kStr += self.endLine
+    #kStr += "  //bbk 2" + self.endLine
     kStr += "  D = D + offsetD;" + self.endLine
     kStr += "  C = C + offsetC;" + self.endLine
 
@@ -237,10 +238,15 @@ class KernelWriterConversion(KernelWriterBase):
       kStr += " + (size%s - 1) * strideW%s" % (indexChar, indexChar)
     kStr += ";" + self.endLine
 
+
+    #pr = "    printf(' bbk in the PostGSU %d %d', i, idxW);%s"
+    #pr = "    printf(' bbk in the PostGSU ');%s"
+    #pr = "    std::cout << std::endl;%s"
     kStr += "  " + self.datatype + " accum = 0;%s" % self.endLine
     kStr += "  for (int i=0; i<gsu; i++) {%s" % self.endLine
     kStr += "    accum += W[idxW];%s" % self.endLine
     kStr += "    idxW  += strideW;%s" % self.endLine
+    #kStr += pr % self.endLine
     kStr += "  }%s" % self.endLine
 
     kStr += "  if( beta == (%s)0)%s" % (self.state["ProblemType"]["ComputeDataType"].toDevice(self.language), self.endLine)

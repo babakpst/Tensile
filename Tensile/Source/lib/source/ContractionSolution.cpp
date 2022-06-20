@@ -865,6 +865,7 @@ namespace Tensile
 
         std::vector<KernelInvocation> rv;
 
+        // This the pre-kernel, for non-HPA functions.
         if(sizeMapping.globalSplitU > 1 && sizeMapping.globalAccumulation != 2)
         {
             if(debug)
@@ -873,11 +874,13 @@ namespace Tensile
                 rv.push_back(generateBetaOnlyCall<TypedInputs, false>(problem, inputs, hardware));
         }
 
+        // This is the main kernel
         if(debug)
             rv.push_back(generateSingleCall<TypedInputs, true>(problem, inputs, hardware));
         else
             rv.push_back(generateSingleCall<TypedInputs, false>(problem, inputs, hardware));
 
+        // This is ..._postGSU
         if(sizeMapping.globalAccumulation)
         {
             if(debug)

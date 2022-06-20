@@ -462,9 +462,10 @@ validParameters = {
     # GSU applies only to the unroll summation dimension
     "GlobalSplitU":               list(range(1, 1024+1)),
 
-    # choose how to do GlobalSplitU
-    # 1: use atomic operation to accumlate on one buffer
-    # 2: each GSU group write to each own buffer and accumulate by another kernel
+    # Chooses how to do GlobalSplitU: 
+    # SingleBuffer: uses atomic operation to accumulate on one buffer
+    # MultipleBuffer: each GSU group write to each own buffer and accumulate by another kernel
+    # if GlobalSplitU=1, this parameter will be ignored (and set to SingleBuffer for consistency in lib logics). # bbk
     "GlobalSplitUAlgorithm":      ["SingleBuffer", "MultipleBuffer"],
 
     # When splitting up the summation between workgroups, there are two options for organizing which workgroup will do what
