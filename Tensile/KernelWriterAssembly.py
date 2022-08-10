@@ -2128,12 +2128,19 @@ class KernelWriterAssembly(KernelWriter):
   def defineMACInstructionMacros(self):
     kStr = ""
 
+    print(" bbk before ")
     kStr += ".macro _v_mac_f32 c:req, a:req, b:req" + self.endLine
     if self.kernel["MACInstruction"] == "FMA":
-      if self.asmCaps["v_fmac_f32"]:
-        kStr += r"    v_fmac_f32 \c, \a, \b" + self.endLine
-      elif self.asmCaps["v_fma_f32"]:
+      # if self.asmCaps["v_fmac_f32"]:
+      #   kStr += r"    v_fmac_f32 \c, \a, \b" + self.endLine
+      # elif self.asmCaps["v_fma_f32"]:
+      #   kStr += r"    v_fma_f32 \c, \a, \b, \c" + self.endLine
+      if self.asmCaps["v_fma_f32"]:
+        print("bbk using the NEW fma")
         kStr += r"    v_fma_f32 \c, \a, \b, \c" + self.endLine
+      elif self.asmCaps["v_fmac_f32"]:
+        print("bbk using the old fmac")
+        kStr += r"    v_fmac_f32 \c, \a, \b" + self.endLine
       else:
         raise RuntimeError("FMA instruction specified but not supported on {}".format(self.kernel["ISA"]))
     elif self.asmCaps["v_mac_f32"]:
