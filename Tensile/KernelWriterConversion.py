@@ -202,7 +202,8 @@ class KernelWriterConversion(KernelWriterBase):
     ########################################
     # apply offset
     kStr += self.endLine
-    #kStr += "  //bbk 2" + self.endLine
+    print("bbk kernels KernelWriteConversion: ",self.kernelName)
+    kStr += "  //bbk 2" + self.endLine
     kStr += "  D = D + offsetD;" + self.endLine
     kStr += "  C = C + offsetC;" + self.endLine
 
@@ -238,7 +239,8 @@ class KernelWriterConversion(KernelWriterBase):
       kStr += " + (size%s - 1) * strideW%s" % (indexChar, indexChar)
     kStr += ";" + self.endLine
 
-
+    kStr += r'  printf(" bbk in the PostGSU \n");' + self.endLine
+    #kStr += '  std::cout << " bbk in the PostGSU " << std::endl;' + self.endLine
     #pr = "    printf(' bbk in the PostGSU %d %d', i, idxW);%s"
     #pr = "    printf(' bbk in the PostGSU ');%s"
     #pr = "    std::cout << std::endl;%s"

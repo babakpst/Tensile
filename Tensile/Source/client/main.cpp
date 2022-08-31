@@ -661,12 +661,15 @@ int main(int argc, const char* argv[])
                             TimingEvents warmupStartEvents(warmupInvocations, eventCount);
                             TimingEvents warmupStopEvents(warmupInvocations, eventCount);
 
+
+                            std::cout << " bbk any warmup invocation? "<<  warmupInvocations << std::endl;
                             for(int i = 0; i < warmupInvocations; i++)
                             {
                                 listeners.preWarmup();
+
                                 if(gpuTimer)
                                     {
-                                    //std::cout << " bbk before calling the kernel \n";
+                                    std::cout << " bbk before calling the kernel gpu timer\n";
                                     HIP_CHECK_EXC(adapter.launchKernels(kernels,
                                                                         stream,
                                                                         warmupStartEvents[i],
@@ -694,15 +697,21 @@ int main(int argc, const char* argv[])
 
                                 listeners.preEnqueues();
 
+                                std::cout << " bbk in the syncs before " << i << std::endl;
                                 for(int j = 0; j < enq; j++)
                                 {
+                                    std::cout << " bbk in the enq before " << j << std::endl;
+
                                     if(gpuTimer)
                                         HIP_CHECK_EXC(adapter.launchKernels(
                                             kernels, stream, startEvents[j], stopEvents[j]));
                                     else
                                         HIP_CHECK_EXC(adapter.launchKernels(
                                             kernels, stream, nullptr, nullptr));
+                                    std::cout << " bbk in the enq after " << j << std::endl;
+                                    
                                 }
+                                std::cout << " bbk in the syncs after " << i << std::endl;
 
                                 listeners.postEnqueues(startEvents, stopEvents);
                                 listeners.validateEnqueues(inputs, startEvents, stopEvents);

@@ -2942,45 +2942,63 @@ class Solution(collections.abc.Mapping):
         reject(state, "int8 doesn't support LocalSplitU")
         return
 
-    # bbk  ===============================================
+    # bbk: This section is moved from top  ===============================================
     if ("_GlobalAccumulation" not in state) or ("_WorkspaceSizePerElemC" not in state):
       state["_GlobalAccumulation"] = None
       state["_WorkspaceSizePerElemC"] = 0
 
+      # summary of the GSU
+      # valid for all cases with the two algorithms- required workspace.
       if state["GlobalSplitU"] > 1:  # bbk  merge this condition with supported condition
         computeName  = state["ProblemType"]["ComputeDataType"].toName()  # bbk remove
         computeBytes = state["ProblemType"]["ComputeDataType"].numBytes()
-
-        if state["GlobalSplitUAlgorithm"] == 'SingleBuffer':
-          #if computeName != state["ProblemType"]["DestDataType"].toName(): # bbk removed this. 
-          print()
-          if computeName != state["ProblemType"]["DataType"].toName(): # bbk this says that HPA+singlebuffer requires workspace, but non-HPA doesn't. 
-            state["_GlobalAccumulation"] = 'SingleBuffer'   # bbk uncommnet
-            state["_WorkspaceSizePerElemC"] = computeBytes # bbk remove the comment
-        elif state["GlobalSplitUAlgorithm"] == 'MultipleBuffer':
-          state["_GlobalAccumulation"] = 'MultipleBuffer'
-          state["_WorkspaceSizePerElemC"] = computeBytes * state["GlobalSplitU"]
-
+        
         #if state["_GlobalAccumulation"] == 'SingleBuffer':
         #  state["_WorkspaceSizePerElemC"] = computeBytes
         #elif state["_GlobalAccumulation"] == 'MultipleBuffer':
         #  state["_WorkspaceSizePerElemC"] = computeBytes * state["GlobalSplitU"]
 
+        # This first condition is why HPA single buffer requires workspace
+        if state["GlobalSplitUAlgorithm"] == 'SingleBuffer':
+          #if computeName != state["ProblemType"]["DestDataType"].toName(): # bbk removed this. 
+          # these changes cause the non-hpa functions require Workspace 
+          #state["_GlobalAccumulation"] = 'SingleBuffer'   # bbk does not exit in the original code, added to test non-HPA with _GA=SB
+          #state["_WorkspaceSizePerElemC"] = 0  # bbk does not exit in the original code, added to test non-HPA with _GA=SB
+          #state["_WorkspaceSizePerElemC"] = computeBytes  # bbk does not exit in the original code, added to test non-HPA with _GA=SB
+          
+          print(" bbk before WS allocation")
+          # bbk this says that HPA+singlebuffer requires workspace, but non-HPA doesn't. ???
+          #if computeName != state["ProblemType"]["DataType"].toName(): # bbk uncomment original
+          if computeName != state["ProblemType"]["DestDataType"].toName(): # bbk uncomment original
+            state["_GlobalAccumulation"] = 'SingleBuffer'   # bbk uncommnet (exits in the original code)
+            state["_WorkspaceSizePerElemC"] = computeBytes # bbk uncomment (exits in the original code)
+            #state["_WorkspaceSizePerElemC"] = 0 # bbk uncomment (exits in the original code)
+          #elif (computeName == state["ProblemType"]["DestDataType"].toName() and state["HighPrecisionAccumulate"] ): # bbk uncomment original
+          elif (computeName == state["ProblemType"]["DestDataType"].toName() and computeName != state["ProblemType"]["DataType"].toName() ): # bbk uncomment original
+            print(" bbk HSS/BSS")
+            state["_GlobalAccumulation"] = 'SingleBuffer'   # bbk uncommnet (exits in the original code)
+            state["_WorkspaceSizePerElemC"] = 0 # bbk uncomment (exits in the original code)
+            #state["_WorkspaceSizePerElemC"] = 0 # bbk uncomment (exits in the original code)
+        elif state["GlobalSplitUAlgorithm"] == 'MultipleBuffer': # workspace is needed for all gemm funcs when alo is MB.
+          state["_GlobalAccumulation"] = 'MultipleBuffer'
+          state["_WorkspaceSizePerElemC"] = computeBytes * state["GlobalSplitU"]
+
         if not state["GlobalSplitUSummationAssignmentRoundRobin"] and state["LoopTail"]: # bbk check thik
           reject(state, "GlobalSplitU and LoopTail require SummationAssignmentRoundRobin=True since strongly breaks Tensile kernel architecture")
           return
-        # added GSU support for DGEMM   # bbk remove
-        supported = \
-          (state["ProblemType"]["DataType"].isSingle()) or \
-          (state["ProblemType"]["DataType"].isDouble() and state["BufferStore"]) or \
-          (state["ProblemType"]["DestDataType"].isInt32()) or \
-          (state["KernelLanguage"] == "Assembly" and  # bbk check if we need these conditions. 
-              (state["ProblemType"]["DataType"].isHalf() and not state["ProblemType"]["HighPrecisionAccumulate"]) or # hgemm
-              (state["_GlobalAccumulation"])
-          )
-        if not supported:  # bbk uncomment
-          reject(state, "GlobalSplitU only compatible with single or asm and (half or mixed) precision")          
-          return
+        # added GSU support for DGEMM   # bbk once we made sure that GSU is valid for all types remove the unsupported rejections
+        # uncomment in the original ticket.
+        # supported = \
+        #   (state["ProblemType"]["DataType"].isSingle()) or \
+        #   (state["ProblemType"]["DataType"].isDouble() and state["BufferStore"]) or \
+        #   (state["ProblemType"]["DestDataType"].isInt32()) or \
+        #   (state["KernelLanguage"] == "Assembly" and  # bbk check if we need these conditions. 
+        #       (state["ProblemType"]["DataType"].isHalf() and not state["ProblemType"]["HighPrecisionAccumulate"]) or # hgemm
+        #       (state["_GlobalAccumulation"])
+        #   )
+        # if not supported:  # bbk uncomment
+        #   reject(state, "GlobalSplitU only compatible with single or asm and (half or mixed) precision")          
+        #   return
 
     # to eliminate identical kernels when GSU=1 but GlobalSplitUAlgorithm is defined as SingleBuffer and MultipleBuffer # bbk
     if state["GlobalSplitU"] == 1 and state["GlobalSplitUAlgorithm"] == 'MultipleBuffer':  # bbk  merge this condition with supported condition
@@ -3004,12 +3022,17 @@ class Solution(collections.abc.Mapping):
     #   if not supported:
     #     reject(state, "GlobalSplitU only compatible with single or asm and (half or mixed) precision")
     #     return
-
+    
+    
+    print(" bbk zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
+    print("bbk _GlobalAccumulation:", state["_GlobalAccumulation"] , "GlobalSplitUAlgorithm: ", state["GlobalSplitUAlgorithm"], " not cond ", not state["_GlobalAccumulation"]  )
     # bbk  ===============================================
 
     if state["VectorAtomicWidth"] == -1:
       state["VectorAtomicWidth"] = 1 # TODO - remove this and next line when VAW works for other types
-      if state["ProblemType"]["DataType"].isHalf() and (not state["_GlobalAccumulation"]):
+      print(" checkpoint 000")
+      if state["ProblemType"]["DataType"].isHalf() and (not state["_GlobalAccumulation"]): # bbk in the current form only for hgemm
+        print(" checkpoint 001")
         state["VectorAtomicWidth"] = 2
 
     if state["VectorAtomicWidth"] >= 2 \
@@ -3021,7 +3044,7 @@ class Solution(collections.abc.Mapping):
       if (not state["EnableMatrixInstruction"]) and state["VectorWidth"] < 2:
         reject(state, "Assembly half requires VectorWidth >= 2 for non-MFMA mode")
 
-      if state["GlobalSplitU"] > 1 and (not state["_GlobalAccumulation"]):
+      if state["GlobalSplitU"] > 1 and (not state["_GlobalAccumulation"]): # bbk in the current form only for hgemm
         if state["VectorAtomicWidth"] < 2:
           reject(state, "Assembly GSU half requires VectorWidth >= 2 (for 32-bit CAS)")
 
@@ -3618,16 +3641,20 @@ class Solution(collections.abc.Mapping):
 
     # lds size is the greater of the two
     ldsNumElements = max(ldsNumElementsAB, ldsNumElementsReduction, ldsNumElementsOccupancy)
-
     if state["StoreRemapVectorWidth"] == -1:
       # use de_read_b64 as default in storeRemap to avoid bank conflict
       defaultRemap = 8 // state["ProblemType"]["DestDataType"].numBytes()
       defaultRemap = max(defaultRemap, state["MacroTile0"]//state["WavefrontSize"])
       ldsRemapPad = max(defaultRemap, state["MIOutputVectorWidth"])
       ldsNumElementsRemapC = (state["MacroTile0"]+ldsRemapPad)* state["MatrixInstN"] * state["MIWaveGroup"][1]
-      if state["_GlobalAccumulation"]:
+
+
+      print("bbk _GlobalAccumulation:", state["_GlobalAccumulation"] , "GlobalSplitUAlgorithm: ", state["GlobalSplitUAlgorithm"] )
+      if state["_GlobalAccumulation"]: #bbk if _GA = SB/MB - affects sgemm SB, now this case goes through as well, but this coefficient is 1.
+        print(" bbk check out this condition True")
         computeBytes = state["ProblemType"]["ComputeDataType"].numBytes()
         ldsNumElementsRemapC *= (computeBytes / state["ProblemType"]["DestDataType"].numBytes())
+      print(" bbk check out this after condition")
       ldsSize = ldsNumElementsRemapC * state["ProblemType"]["DestDataType"].numBytes()
       if not math.log(state["MacroTile0"],2).is_integer() or \
           ldsSize > globalParameters["MaxLDS"] or \
@@ -3698,7 +3725,9 @@ class Solution(collections.abc.Mapping):
         return
 
     #check not support cases and calculate lds resources
+    print("bbk StoreRemapVectorWidth", state["StoreRemapVectorWidth"])
     if state["StoreRemapVectorWidth"]:
+     
       if not state["EnableMatrixInstruction"]:
         reject(state, "storeRemap only support MatrixInstruction kernel")
         return
@@ -3725,7 +3754,11 @@ class Solution(collections.abc.Mapping):
       storeInstMaxWidth = 4 # maximum dwordx4
       srMinVw = max(storeInstMinWidth, int(storeInstMinWidth/state["ProblemType"]["DestDataType"].numRegisters()))
       numReg  = state["ProblemType"]["DestDataType"].numRegisters()
-      if state["_GlobalAccumulation"]:
+      
+      
+
+      if state["_GlobalAccumulation"]: # bbk for SB/MB, SB sgemm goes through now, but 
+        print("bbk you should see this only if non-hpa+SB")
         numReg = state["ProblemType"]["ComputeDataType"].numRegisters()
 
       srMaxVw = int(storeInstMaxWidth/numReg)
@@ -3744,7 +3777,7 @@ class Solution(collections.abc.Mapping):
       ldsRemapPad = max(state["StoreRemapVectorWidth"],state["MIOutputVectorWidth"])
       ldsNumElementsRemapC = (state["MacroTile0"]+ldsRemapPad)* state["MatrixInstN"] * state["MIWaveGroup"][1]
 
-      if state["_GlobalAccumulation"]:
+      if state["_GlobalAccumulation"]: # bbk goes 
         computeBytes = state["ProblemType"]["ComputeDataType"].numBytes()
         multiplier = computeBytes // state["ProblemType"]["DataType"].numBytes()
       elif state["ProblemType"]["DestDataType"].numBytes() > state["ProblemType"]["DataType"].numBytes():

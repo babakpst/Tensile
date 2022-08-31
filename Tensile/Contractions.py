@@ -387,7 +387,7 @@ class ProblemPredicate(Properties.Predicate):
         if 'BufferStore' in state and state['BufferStore'] == True:
             rv += [cls('BufferStoreOffsetLimitCheck', value=state['MacroTile1'])]
 
-        if '_GlobalAccumulation' in state and state['_GlobalAccumulation'] != None:
+        if '_GlobalAccumulation' in state and state['_GlobalAccumulation'] != None: # bbk affects sgemm SB- there was a bug for MinKForGSU with SB.
             value = globalParameters['MinKForGSU'] * state['GlobalSplitU']
             rv += [cls('GlobalSplitUCheckMinK', value=value)]
 
@@ -424,7 +424,8 @@ class SizeMapping:
     def FromOriginalState(cls, d):
         globalAccum = 0
         if d['_GlobalAccumulation'] == 'SingleBuffer':
-            globalAccum = 1
+            globalAccum = 1 #bbk original
+            #globalAccum = 0 #bbk mine -> no does not work
         if d['_GlobalAccumulation'] == 'MultipleBuffer':
             globalAccum = 2
         return cls(workGroup             = d['WorkGroup'],
