@@ -466,6 +466,24 @@ validParameters = {
     # SingleBuffer: uses atomic operation to accumulate on one buffer
     # MultipleBuffer: each GSU group write to each own buffer and accumulate by another kernel
     # if GlobalSplitU=1, this parameter will be ignored (and set to SingleBuffer for consistency in lib logics). # bbk
+    # GSU/GSUAlo can be used with all gemm types. 
+    # When GSU>1, we need extra kernels (other than the main assembly kernel) to do the computations. The language of these 
+    # kernels are HIP source and will be dropped in 1_BenchmarkProblems/Cijk_*/*_Final/source/Kernels.?pp
+    #   - pre-kernel: Global Accumulation.
+    #   - postGSU: accumulates AxB and alpha*AxB+beta*C.
+    #
+    # Table below shows the required kernel and workspace for each gemm function. 
+    #                        | non-HPA gemm                  | HPA gemm
+    #                        | SingleBuffer | MultipleBuffer | SingleBuffer | MultipleBuffer 
+    # pre-kernel             | yes          | no             | yes          | no
+    # main kernel            | yes          | yes            | yes          | yes
+    # postGSU                | no           | yes            | yes          | yes
+    # _GlobalAccumulation    | None         | MultipleBuffer | SingleBuffer | MultipleBuffer 
+    # _WorkspaceSizePerElemC | 0            | Tc*GSU         | Tc           | Tc*GSU
+    # WorkspaceSize          | 0            | Tc*GSU*m*n     | Tc*m*n       | Tc*GSU*m*n
+    #
+    # Note that the workspace in MultipleBuffer algo is used for accumulating the C matrix. The workspace for 
+    # HPA-SingleBuffer is used to convert the output from ComputeDataType to DestDataType.
     "GlobalSplitUAlgorithm":      ["SingleBuffer", "MultipleBuffer"],
 
     # When splitting up the summation between workgroups, there are two options for organizing which workgroup will do what

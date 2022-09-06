@@ -194,9 +194,6 @@ class KernelWriterBetaOnly(KernelWriterBase):
 
     # apply offset
     kStr += self.endLine
-    print("bbk kernels KernelWriteBetaOnly: ",self.kernelName)
-    kStr += "  //bbk 1" + self.endLine
-    kStr += r'  printf(" bbk in the BetaOnly \n");' + self.endLine    
     if not self.state["_GlobalAccumulation"]:
       kStr += "  D = D + offsetD;" + self.endLine
     kStr += "  C = C + offsetC;" + self.endLine

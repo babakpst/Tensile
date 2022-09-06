@@ -232,8 +232,7 @@ namespace Tensile
                                        HIP_LAUNCH_PARAM_END};
 
             if(startEvent != nullptr)
-            HIP_CHECK_RETURN(hipEventRecord(startEvent, stream));
-            //std::cout << " bbk before launching the kernel " << std::endl;
+                HIP_CHECK_RETURN(hipEventRecord(startEvent, stream));
             HIP_CHECK_RETURN(hipExtModuleLaunchKernel(function,
                                                       kernel.numWorkItems.x,
                                                       kernel.numWorkItems.y,
@@ -248,11 +247,8 @@ namespace Tensile
                                                       nullptr, // event
                                                       nullptr // event
                                                       ));
-            //std::cout << " bbk after launching the kernel " << std::endl;
             if(stopEvent != nullptr)
                 HIP_CHECK_RETURN(hipEventRecord(stopEvent, stream));
-            //std::cout << " bbk before leaving the kernel "  << std::endl;
-
             return hipSuccess;
         }
 
@@ -302,10 +298,8 @@ namespace Tensile
                                                      stopEvents.size(),
                                                      ")"));
 
-            //std::cout<< " bbk one before " << std::endl;
             for(size_t i = 0; i < kernels.size(); i++)
             {
-                //std::cout<< " bbk launching kernel: " << i << ", kernel name: " << kernels[i].kernelName<< std::endl;
                 HIP_CHECK_RETURN(launchKernel(kernels[i], stream, startEvents[i], stopEvents[i]));
             }
             return hipSuccess;

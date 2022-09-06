@@ -749,7 +749,7 @@ class KernelWriterAssembly(KernelWriter):
       kernel["LocalWriteUseSgprA"] = False # Requires DirectToLdsA
       kernel["LocalWriteUseSgprB"] = False # Requires DirectToLdsB
 
-    self.useAtomicAdd = self.asmCaps["HasAtomicAdd"] and (kernel["_GlobalAccumulation"] == 'SingleBuffer')  # bbk this is not working for non-hpa SB!
+    self.useAtomicAdd = self.asmCaps["HasAtomicAdd"] and (kernel["_GlobalAccumulation"] == 'SingleBuffer')
 
     # OptPreLoopVmcnt for PAP:
     # the vmcnt for _ds_store in pre-loop can be optimized to skip the store of prev PKLoop
@@ -2890,7 +2890,7 @@ class KernelWriterAssembly(KernelWriter):
     kStr = self.endLine
 
     # handle Batch C/D
-    if not kernel["_GlobalAccumulation"]: # true only if _GA = none/ includes non-hpa funcitons with singlebuffer.
+    if not kernel["_GlobalAccumulation"]:
       for idx in kernel["ProblemType"]["IndicesBatch"]:
         if not isPackedIndex(kernel,idx):
           kStr += inst("s_mul_i32", sgpr(tmpSgpr), sgpr(Batch), 0x8, "offset of global buffer address")

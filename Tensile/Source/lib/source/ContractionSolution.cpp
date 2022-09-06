@@ -365,8 +365,7 @@ namespace Tensile
             rv.args.append<uint64_t>("tensor2dSizeB", tensor2dSizeB);
         }
 
-        if(sizeMapping.globalAccumulation) // bbk original
-        //if(sizeMapping.globalAccumulation == 2)  // bbk mine
+        if(sizeMapping.globalAccumulation)
         {
             rv.args.append<void const*>("ws_d", inputs.ws);
             rv.args.append<void const*>("ws_c", inputs.ws);
@@ -407,8 +406,7 @@ namespace Tensile
         size_t startStrideCD = problemType.useInitialStridesCD ? 0 : 1;
         size_t startStrideAB = problemType.useInitialStridesAB ? 0 : 1;
 
-        if(sizeMapping.globalAccumulation) // bbk original
-        //if(sizeMapping.globalAccumulation == 2)  // bbk mine
+        if(sizeMapping.globalAccumulation)
         {
             size_t wsStride = startStrideCD ? d.sizes()[0] : 1;
             for(size_t i = startStrideCD; i < d.dimensions(); i++)
@@ -637,8 +635,7 @@ namespace Tensile
         rv.numWorkItems.y = rv.workGroupSize.y * rv.numWorkGroups.y;
         rv.numWorkItems.z = rv.workGroupSize.z * rv.numWorkGroups.z;
 
-        if(sizeMapping.globalAccumulation) // bbk original
-        //if(sizeMapping.globalAccumulation == 2)  // bbk mine
+        if(sizeMapping.globalAccumulation)
             rv.args.append<void*>("WS", inputs.ws);
         else if(problemType.stridedBatched)
             rv.args.append<typename TypedInputs::DType*>("D", inputs.d);
@@ -650,8 +647,7 @@ namespace Tensile
         else
             rv.args.append<typename TypedInputs::CType const* const*>("batchC", inputs.batchC);
 
-        if(sizeMapping.globalAccumulation) // bbk original
-        //if(sizeMapping.globalAccumulation == 2)  // bbk mine
+        if(sizeMapping.globalAccumulation)
         {
             size_t stride = d.sizes()[0];
             for(size_t i = 1; i < d.dimensions(); i++)
@@ -869,30 +865,21 @@ namespace Tensile
 
         std::vector<KernelInvocation> rv;
 
-        
-        std::cout << " bbk in ContractionSolution : " << sizeMapping.globalAccumulation << std::endl;
-        // This the pre-kernel, for non-HPA functions.
         if(sizeMapping.globalSplitU > 1 && sizeMapping.globalAccumulation != 2)
         {
-            std::cout << " bbk calling the preKernel \n";
-        
             if(debug)
                 rv.push_back(generateBetaOnlyCall<TypedInputs, true>(problem, inputs, hardware));
             else
                 rv.push_back(generateBetaOnlyCall<TypedInputs, false>(problem, inputs, hardware));
         }
 
-        // This is the main kernel
         if(debug)
             rv.push_back(generateSingleCall<TypedInputs, true>(problem, inputs, hardware));
         else
             rv.push_back(generateSingleCall<TypedInputs, false>(problem, inputs, hardware));
 
-        // This is ..._postGSU
-        if(sizeMapping.globalAccumulation)  // original
-        //if(sizeMapping.globalAccumulation==2) // bbk 
+        if(sizeMapping.globalAccumulation)
         {
-            std::cout << " bbk calling the PostGSU \n";
             if(debug)
                 rv.push_back(
                     generateOutputConversionCall<TypedInputs, true>(problem, inputs, hardware));

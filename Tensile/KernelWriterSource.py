@@ -1073,8 +1073,6 @@ class KernelWriterSource(KernelWriter):
     ####################################
     # apply offset
     kStr += self.endLine
-    print("bbk kernels KernelWriteSource: ",self.kernelName)
-    #kStr += "  //bbk 3" + self.endLine
     if not kernel["_GlobalAccumulation"]:
       kStr += "  D = D + offsetD;" + self.endLine
       kStr += "  C = C + offsetC;" + self.endLine
